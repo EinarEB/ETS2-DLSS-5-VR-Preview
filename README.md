@@ -1,10 +1,16 @@
 # ETS2 DLSS 5 VR Preview v0.1
 
+[![View interactive comparisons — cab and exterior before/after slider](docs/images/comparisons.svg)](https://einareb.github.io/ETS2-DLSS-5-VR-Preview/)
+
+### [View interactive comparisons →](https://einareb.github.io/ETS2-DLSS-5-VR-Preview/)
+
+Choose the cab or truck exterior, then drag the before/after slider. Medium has real in-game comparisons now; Low, High and Ultra comparisons are awaiting processing. [Setup guide](#install-in-three-steps) · [Current test status](docs/VALIDATION.md)
+
 Neural rendering for **Euro Truck Simulator 2 in VR**, with Snowymoon lighting, separate processing for each eye, and simple quality controls.
 
 **Release candidate — final headset validation pending.** The earlier private build has a visible effect in both eyes. This candidate adds the installer, launcher, comparison key and a revised driver connection. Those changes still need a final in-game test. It is an experimental community integration, with visible artifacts and a narrow tested configuration.
 
-**Source preview is available now; the packaged download is pending the final headset test.** The installation guide below describes the prepared release. See the [interactive comparison page](https://ets2-dlss5-vr-preview.einareb.chatgpt.site/) for real captured images and the status of the preset comparisons.
+**Source preview is available now; the packaged download is pending the final headset test.** The installation guide below describes the prepared release. The comparison page and its full-resolution images are hosted with this repository on GitHub Pages.
 
 ![Preview launcher](docs/images/launcher.png)
 
