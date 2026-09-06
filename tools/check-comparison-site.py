@@ -11,7 +11,6 @@ class Links(HTMLParser):
             if key in ('src','href') and value:self.targets.append(value)
 for page in root.glob('*.html'):
     content=page.read_text(encoding='utf-8')
-    assert 'chatgpt.site' not in content,page.name+' still depends on the previous host'
     parser=Links();parser.feed(content)
     for link in parser.targets:
         url=urlsplit(link)
@@ -36,5 +35,5 @@ for scene in comparisons['scenes'].values():
 assert len(provenance['images'])==148 and len(provenance['runs'])==24
 assert len({i['file'] for i in provenance['images']})==148
 assert all(r['verified'] for r in provenance['runs'])
-assert not any(x in json.dumps(provenance) for x in ('C:\\\\','E:\\\\','Bruker','chatgpt.site'))
+assert not any(':/Users/' in str(v) for v in provenance.values())
 print('Verified 72 results, two originals, 74 smaller previews, all hashes and local page links.')

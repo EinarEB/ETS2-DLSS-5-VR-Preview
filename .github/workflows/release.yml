@@ -1,0 +1,39 @@
+name: Build and publish preview
+on:
+  push:
+    branches: [main]
+    paths: [release-version.txt, .github/workflows/release.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: preview-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build native add-ons, installer and launcher; run CPU tests
+        shell: cmd
+        run: call build.cmd
+      - name: Record checks and package the release
+        shell: pwsh
+        run: |
+          python tools/record-checks.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/package.py --label 0.1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Publish the tested package
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content -LiteralPath release-version.txt -Raw).Trim()
+          if ($version -ne '0.1') { throw 'Unexpected release version.' }
+          $package = Get-ChildItem -LiteralPath dist -Directory | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+          $assets = @((Join-Path $package.FullName 'ETS2-DLSS-5-VR-Preview-0.1-win-x64.zip'), (Join-Path $package.FullName 'ETS2-DLSS-5-VR-Preview-0.1-source.zip'), (Join-Path $package.FullName 'SHA256SUMS.txt'))
+          foreach ($asset in $assets) { if (!(Test-Path -LiteralPath $asset)) { throw 'A release asset is missing.' } }
+          gh release create v0.1 @assets --target $env:GITHUB_SHA --title 'ETS2 DLSS 5 VR Preview v0.1' --notes-file docs/RELEASE-NOTES.md --prerelease
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

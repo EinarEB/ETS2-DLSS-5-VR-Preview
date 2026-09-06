@@ -19,6 +19,7 @@ internal sealed class InputCheck {
     public bool ready;
 }
 internal class SetupPlatform {
+    internal virtual string[] SystemErrors(){return Requirements.Errors(Requirements.Probe());}
     internal virtual string DriveFormat(string root){return new DriveInfo(root).DriveFormat;}
     internal virtual long FreeBytes(string root){return new DriveInfo(root).AvailableFreeSpace;}
     internal virtual bool RuntimePresent(string name){return File.Exists(Path.Combine(Environment.SystemDirectory,name));}
@@ -145,8 +146,8 @@ internal static class SetupEngine {
             var item=new InputCheck{name=name,path=path??"",ready=false};
             try{if(String.IsNullOrWhiteSpace(path)||!File.Exists(path))throw new IOException("Missing — add this download to Required files.");
                 var bytes=read();PreviewFiles.X64(bytes,name);
-                if(PreviewFiles.Hash(bytes)!=(string)deps[key])throw new IOException("Different version — see the exact version in the guide.");
-                item.ready=true;item.message="Ready — tested version";
+                if(PreviewFiles.Hash(bytes)!=(string)deps[key])throw new IOException(key=="eurotrucks2.exe"?"Requires ETS2 VR 1.60.1.1007 (oculus branch). See game compatibility in the guide.":"Different version — use the exact download in the guide.");
+                item.ready=true;item.message="Ready";
             }catch(Exception e){item.message=e.Message;}checks.Add(item);
         };
         add("Euro Truck Simulator 2",input.game_exe,()=>File.ReadAllBytes(input.game_exe),"eurotrucks2.exe");
@@ -157,6 +158,8 @@ internal static class SetupEngine {
     }
     internal static SetupPlan Validate(SetupInputs input,string package,Action<string> report,CancellationToken token,SetupPlatform platform=null) {
         platform=platform??new SetupPlatform();
+        token.ThrowIfCancellationRequested();
+        var systemErrors=platform.SystemErrors();if(systemErrors.Length!=0)throw new IOException(String.Join(Environment.NewLine,systemErrors));
         if(Process.GetProcessesByName("eurotrucks2").Length!=0)throw new IOException("Close ETS2 before installing the preview.");
         input=new SetupInputs{game_exe=PreviewFiles.Full(input.game_exe),reshade_dll=PreviewFiles.Full(input.reshade_dll),snowymoon_zip=PreviewFiles.Full(input.snowymoon_zip),neural_folder=PreviewFiles.Full(input.neural_folder),destination=PreviewFiles.Full(input.destination),documents=PreviewFiles.Full(input.documents),desktop_shortcut=input.desktop_shortcut};
         var plan=new SetupPlan{input=input,package=PreviewFiles.Full(package)};
@@ -220,7 +223,7 @@ internal static class SetupEngine {
             }
             report("Preparing local settings. Your campaigns stay where they are…");
             const string home="game-home/Euro Truck Simulator 2/";
-            var defaults=new Dictionary<string,string>{{"r_manual_stereo_mirror_mode","3"},{"r_scale_x","1"},{"r_scale_y","1"},{"r_manual_stereo_buffer_scale","1.0"},{"r_dof","0"},{"r_aa","0"},{"r_multimon_mode","0"},{"r_taa_luma_sharpen","0"},{"r_taa_modulated_drr_strength","0.0"}};
+            var defaults=new Dictionary<string,string>{{"r_device","dx11"},{"r_manual_stereo_mirror_mode","3"},{"r_scale_x","1"},{"r_scale_y","1"},{"r_manual_stereo_buffer_scale","1.0"},{"r_dof","0"},{"r_aa","0"},{"r_multimon_mode","0"},{"r_taa_luma_sharpen","0"},{"r_taa_modulated_drr_strength","0.0"}};
             tx.Text(home+"config.cfg",PreviewFiles.PatchGame(File.ReadAllText(plan.regular),defaults));
             var controls=Path.Combine(input.documents,"global_controls.sii");if(File.Exists(controls))tx.Copy(controls,home+"global_controls.sii");
             tx.DirectoryFor(Path.Combine(dest,home,"profiles"));
@@ -238,7 +241,7 @@ internal static class SetupEngine {
             foreach(var entry in new[]{new[]{"game-root/bin/win_x64/dxgi.dll","ReShade64.dll"},new[]{"game-root/bin/win_x64/dxgi2.dll","snowymoon-dxgi.dll"}}){PreviewFiles.Expected(Path.Combine(dest,entry[0]),(string)plan.dependencies[entry[1]],entry[1]);checkedFiles[entry[0]]=plan.dependencies[entry[1]];}
             foreach(var name in NeuralFiles){PreviewFiles.Expected(Path.Combine(dest,name),(string)plan.dependencies[name],name);checkedFiles[name]=plan.dependencies[name];}
             foreach(var name in new[]{"nvngx_dlss.dll","nvngx_dlssnr.dll"})checkedFiles["game-root/bin/win_x64/"+name]=plan.dependencies[name];
-            var result=new Dictionary<string,object>{{"schema",3},{"version","0.1-candidate21"},{"renderer_root",dest},{"game_exe",Path.Combine(bin,"eurotrucks2.exe")},{"game_home",Path.Combine(dest,"game-home")},{"layer_dir",Path.Combine(dest,"layer")},{"original_config",plan.regular},{"source_exe",input.game_exe},{"source_exe_hash",plan.dependencies["eurotrucks2.exe"]},{"source_archives",plan.archiveState},{"checked_files",checkedFiles}};
+            var result=new Dictionary<string,object>{{"schema",3},{"version","0.1"},{"renderer_root",dest},{"game_exe",Path.Combine(bin,"eurotrucks2.exe")},{"game_home",Path.Combine(dest,"game-home")},{"layer_dir",Path.Combine(dest,"layer")},{"original_config",plan.regular},{"source_exe",input.game_exe},{"source_exe_hash",plan.dependencies["eurotrucks2.exe"]},{"source_archives",plan.archiveState},{"checked_files",checkedFiles}};
             tx.Text("preview.json",Json().Serialize(result));
             tx.Text("setup-complete.txt","Ready. Open ETS2 VR Preview.exe. On first launch, create a NEW LOCAL profile with Steam Cloud unchecked.\n");
             tx.Commit();return result;

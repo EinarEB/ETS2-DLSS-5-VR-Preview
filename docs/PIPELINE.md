@@ -1,6 +1,6 @@
 # Rendering and settings contract
 
-The supported path is ETS2 Direct3D 11 → OpenXR → ReShade's windowless stereo runtime. A desktop effect runtime is never accepted as the neural image source, regardless of configuration. The classic neural consumer is the only supported consumer in this candidate.
+The supported path is ETS2 Direct3D 11 â†’ OpenXR â†’ ReShade's windowless stereo runtime. A desktop effect runtime is never accepted as the neural image source, regardless of configuration. The classic neural consumer is the only supported consumer in this preview.
 
 1. The depth companion tracks the render lineage and accepts a matched depth pair for the two eye images. Missing or invalid depth prevents processing; it is not replaced with a guessed constant.
 2. The Vort adaptation estimates each eye's motion independently. Textures and history remain separated at the eye boundary. The final coordinate conversion into the Feed convention occurs once.
@@ -15,11 +15,11 @@ The crop is a fixed centered region. It is not gaze tracking, variable-rate shad
 
 ## Driver lifetime
 
-This candidate loads the installed NVIDIA driver's registered `_nvngx.dll` through the MIT bridge interface. It links no NVIDIA SDK implementation and packages no driver or model DLL. The protocol is not a stable public compatibility promise; the exact tested driver matters.
+The preview loads the installed NVIDIA driver's registered `_nvngx.dll` through the MIT bridge interface. It links no NVIDIA SDK implementation and packages no driver or model DLL. The protocol is not a stable public compatibility promise; the exact tested driver matters.
 
 The direct-driver path uses one D3D12/NGX session per process. Fatal initialization, device loss or teardown latches a restart requirement. After its frame resources have retired, the owned device and global parameter block are retained for process cleanup; the add-on does not call the observed-crashing direct Shutdown1 route. If GPU work cannot retire, dependent resources are retained too. The session is never silently recreated on a new device.
 
-This is an explicit stability tradeoff, not a claim of a general reusable driver lifecycle. Closing the game releases the process resources. The final candidate must be tested for initialization, normal exit and relaunch before publication.
+This is an explicit stability tradeoff, not a claim of a general reusable driver lifecycle. Closing the game releases the process resources. Initialization, normal exit and relaunch remain part of ongoing headset validation.
 
 At Windows process termination, the three add-ons skip their DLL-detach cleanup. Their GPU-owning registries do not run automatic COM destructors then; ordinary runtime/device callbacks still perform their explicit cleanup. This avoids queue waits and driver calls under the loader lock after other threads may have stopped. It does not control shutdown code in third-party DLLs. See Microsoft's [DllMain termination guidance](https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain).
 

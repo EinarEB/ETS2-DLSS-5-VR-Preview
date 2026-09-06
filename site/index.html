@@ -1,18 +1,19 @@
 <!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Compare ETS2 DLSS 5 VR quality presets, neural styles and color looks on the same real cab and exterior frames."><meta name="theme-color" content="#111714">
-<title>Comparisons · ETS2 DLSS 5 VR Preview</title><link rel="stylesheet" href="style.css?v=2"><script src="app.js?v=2" defer></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Choose a scene, quality, neural style and color look. Compare the original ETS2 VR frame with your complete DLSS 5 combination."><meta name="theme-color" content="#111714">
+<title>Compare · ETS2 DLSS 5 VR Preview</title><link rel="stylesheet" href="style.css?v=3"><script src="app.js?v=3" defer></script>
 </head><body>
-<header class="topbar"><a class="brand" href="./">ETS2 <span>DLSS 5 VR Preview</span></a><nav aria-label="Main"><a href="setup.html">Setup guide</a><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview">GitHub ↗</a></nav></header>
-<main>
-<div class="intro"><h1>See the difference.</h1><p>Drag across each image to compare. Open a larger view to inspect the details.</p></div>
-<div class="quality-bar"><div class="quality-controls"><span id="quality-label">Quality</span><div class="segments" role="group" aria-labelledby="quality-label"><button data-quality="low" aria-pressed="false">Low</button><button data-quality="medium" aria-pressed="true">Medium</button><button data-quality="high" aria-pressed="false">High</button><button data-quality="ultra" aria-pressed="false">Ultra</button></div></div><p id="quality-summary" aria-live="polite">Medium · 1 pass · 65% resolution · 75% square</p></div>
-<div class="scene-nav"><a href="#exterior">Outside the truck ↓</a><a href="#cab">Inside the cab ↓</a><span>Left eye · full proportions</span></div>
-<p id="page-status" role="status">Loading comparisons…</p><div id="scenes"></div>
-<details class="method"><summary>How these comparisons were made</summary><p>Two real VR frames, captured with Snowymoon lighting. The exterior uses the latest capture; the cab uses the retained interior capture. Each original was held still and processed through all four quality presets and three neural styles. Clean, Cooler and Cold were then applied using the preview's own color shaders.</p><p>Every slider starts from the same ungraded original. Model preset 1, intensity 2 and 100% final blend are fixed. These are processed still frames with zero motion input, not recordings of moving gameplay. They show appearance; flicker and frame rate need a headset test.</p><p>The grid uses smaller lossless previews. Full-size images preserve the native 2504 × 2600 pixels without lossy compression. <a href="assets/provenance.json">Processing details and image hashes ↗</a></p></details>
-<div class="get-started"><div><h2>Take it into VR.</h2><p>Requirements, downloads and a short setup guide.</p></div><a class="button" href="setup.html">Get started ↗</a></div>
-</main>
-<footer><span>Community preview · v0.1</span><a href="credits.html">Credits & licenses</a><p>Independent project. Not affiliated with SCS Software or NVIDIA. Installer coming soon.</p></footer>
-<dialog id="detail" aria-labelledby="detail-title"><div class="dialog-bar"><h2 id="detail-title"></h2><button id="close-detail" aria-label="Close larger comparison">Close ×</button></div><div id="detail-content"></div><div class="full-links"><a id="full-original" target="_blank" rel="noopener">Full-size original ↗</a><a id="full-result" target="_blank" rel="noopener">Full-size result ↗</a><span>Native pixels · lossless</span></div></dialog>
-<noscript><p class="noscript">Enable JavaScript for the comparison sliders. <a href="assets/comparisons.json">Image index</a></p></noscript>
-</body></html>
+<header><a class="brand" href="./">ETS2 <span>DLSS 5 VR Preview</span></a><nav aria-label="Main"><a href="setup.html">Setup guide</a><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/releases/tag/v0.1">Download ↗</a></nav></header>
+<main><div class="intro"><h1>See the difference.</h1><p>Choose your settings. Drag the divider to compare the original with the full effect.</p></div>
+<form class="controls" aria-label="Comparison settings" onsubmit="return false">
+<label>Scene<select id="scene" disabled><option value="exterior">Outside the truck</option><option value="cab">Inside the cab</option></select></label>
+<label>Quality<select id="quality" disabled><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></label>
+<label>Neural style<select id="style" disabled><option value="natural">Natural</option><option value="default">Default</option><option value="cinematic">Cinematic</option></select></label>
+<label>Color look<select id="look" disabled><option value="clean">Clean</option><option value="cooler" selected>Cooler</option><option value="cold">Cold</option></select></label>
+</form>
+<p id="selection-status" role="status">Loading comparisons…</p><div id="comparison" aria-busy="true"></div>
+<div class="view-actions"><button id="show-original" disabled>No effect</button><button id="show-split" disabled>Split view</button><button id="show-result" disabled>Full effect</button></div>
+<div class="downloads"><a id="original-link">Full-size original ↗</a><a id="result-link">Full-size result ↗</a><span>2504 × 2600 · lossless</span></div>
+<details><summary>About these comparisons</summary><p>Each scene starts with one real VR frame captured with Snowymoon lighting. The original has no neural effect or extra color grading. The result combines your chosen quality, neural style and color look at 100% effect. All 72 combinations were rendered in advance; the slider reveals the two images.</p><p>Model preset 1 and intensity 2 are fixed. These are static replays with zero motion input, so they show appearance, not moving-headset stability or frame rate. <a href="assets/provenance.json">Processing details</a></p></details>
+</main><footer><span>Community preview · v0.1</span><a href="credits.html">Credits & licenses</a><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview">GitHub ↗</a></footer>
+<noscript><p>Enable JavaScript to choose and compare settings. <a href="assets/comparisons.json">Image index</a></p></noscript></body></html>

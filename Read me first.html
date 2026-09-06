@@ -4,14 +4,15 @@
 </style></head><body>
 <header><div class="tag">ETS2 DLSS 5 VR · v0.1</div><h1>Get ready to drive.</h1><p>Download the required files, run setup, then launch from your desktop.</p></header>
 <main><p><a href="https://einareb.github.io/ETS2-DLSS-5-VR-Preview/">← Comparisons</a> · <a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview">GitHub</a></p>
-<p><strong>Installer coming soon.</strong> <a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/archive/refs/heads/main.zip">Source code is available now.</a></p>
+<p><a class="button" href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/releases/download/v0.1/ETS2-DLSS-5-VR-Preview-0.1-win-x64.zip">Download v0.1 for Windows</a></p>
 <nav><a href="#requirements">Requirements</a><a href="#files">1 · Downloads</a><a href="#setup">2 · Setup</a><a href="#drive">3 · Drive</a></nav>
 <section id="requirements"><h2>What you need</h2><ul>
-<li><strong>RTX 50-series GPU with 16 GB or more VRAM</strong> and the latest NVIDIA driver.</li>
+<li><strong>RTX 50-series GPU with 16 GB or more VRAM</strong> and NVIDIA driver <strong>616.64 or newer</strong>. Use the latest driver available for your card.</li>
 <li><strong>Windows 11, 64-bit</strong>, and 8 GB free on your ETS2 drive.</li>
-<li><strong>ETS2's latest VR branch</strong> (<strong>oculus</strong> in Steam → Properties → Betas), <strong>DirectX 11 and OpenXR</strong>. Setup checks <a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/blob/main/docs/REQUIRED-FILES.md#game-compatibility">game compatibility</a>.</li>
+<li><strong>ETS2 VR 1.60.1.1007</strong> (<strong>oculus</strong> in Steam → Properties → Betas), <strong>DirectX 11 and OpenXR</strong>. Setup checks <a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/blob/main/docs/REQUIRED-FILES.md#game-compatibility">game compatibility</a>.</li>
 <li>A connected OpenXR headset and your own <a href="https://snowymoon.io/">Snowymoon Lighting access</a>.</li>
 </ul></section>
+<p class="muted">Select your OpenXR runtime before setup. Install the <a href="https://aka.ms/vs/17/release/vc_redist.x64.exe">Microsoft Visual C++ x64 runtime</a> if setup asks for it.</p>
 <section id="files"><h2>1 · Download four things</h2><p>Extract the preview release ZIP. Put the following <strong>five files</strong> in its <strong>Required files</strong> folder.</p>
 <div class="cards">
 <article class="card"><h3>ReShade 6.8.0</h3><code class="filename">ReShade_Setup_6.8.0_Addon.exe</code><p>Use the full add-on version. Leave the EXE intact; our setup extracts it.</p><a class="button" href="https://reshade.me/downloads/ReShade_Setup_6.8.0_Addon.exe">Download ReShade</a></article>
@@ -20,7 +21,7 @@
 <article class="card"><h3>DLSS 310.8 model archive</h3><code class="filename">nvngx_dlss.dll<br>nvngx_dlssnr.dll</code><p>Extract both files from <strong>DLSS310.8.0-Streamline2.13.zip</strong>.</p><a class="button" id="model-download" href="https://cdn.discordapp.com/attachments/1545049227321810974/1545050050609025114/DLSS310.8.0-Streamline2.13.zip?ex=6a9eaffd&amp;is=6a9d5e7d&amp;hm=9497e1aa86dccdbc5116dbffad5000dc699a89f9c71636797082f8678617d31d&amp;" data-expires="2026-09-07T12:37:17Z">Download models</a><p class="muted" id="model-expiry">Link expires 7 September. After that, find the same archive in <a href="https://discord.com/invite/renodx">RenoDX Discord</a> → dlss5-downloads.</p></article>
 </div><p>These files are supplied separately. <a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/blob/main/docs/REQUIRED-FILES.md">Download help and exact versions →</a></p></section>
 <section id="setup"><h2>2 · Run setup</h2><ol>
-<li>Open <strong>Setup ETS2 VR Preview.exe</strong> and select <strong>Check files</strong>.</li>
+<li>Open <strong>Setup ETS2 VR Preview.exe</strong> and select <strong>Check requirements</strong>. Setup checks your PC, runtime, files and install location; it stops if anything is missing or unsupported.</li>
 <li>Use the suggested <strong>new folder on the same drive as ETS2</strong>. Leave <strong>Create a desktop shortcut</strong> selected.</li>
 <li>Select <strong>Prepare preview</strong>, then <strong>Open launcher</strong>.</li>
 </ol><p>The preview has separate settings and saves. Your normal game and campaigns stay in place. Keep the prepared folder where setup creates it.</p></section>

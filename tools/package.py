@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse, datetime, hashlib, json, re, shutil, zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '0.1-candidate21'
+VERSION = '0.1'
 DEPENDENCIES = {
     'eurotrucks2.exe': '03a0a051ecaddf95a4271e014e13c15ddddc2381c094278672a84d37206aa49f',
     'ReShade64.dll': '0cee63f9c9f13f3ac909c5b4903f4dbb4b719a7ab3b4f13b0deaf83c814b94f7',
@@ -32,7 +32,7 @@ SHADERS = [
     'PD80_00_Base_Effects.fxh','pd80_bluenoise.png','pd80_bluenoise_rgba.png','pd80_gaussnoise.png',
 ]
 SOURCE_DIRS = {'src','tests','templates','shaders','external','licenses','tools','assets','docs','site','.github'}
-SOURCE_ROOT_FILES = {'README.md','LICENSE','THIRD-PARTY-NOTICES.md','CHANGELOG.md',
+SOURCE_ROOT_FILES = {'README.md','LICENSE','THIRD-PARTY-NOTICES.md','CHANGELOG.md','release-version.txt',
                      'Read me first.html','build.cmd','test.cmd','source-dependencies.json','.gitignore','.gitattributes'}
 ALLOWED_EXTENSIONS = {'.cpp','.h','.hpp','.c','.rc','.cs','.fx','.fxh','.ini','.cfg','.json','.txt','.md',
                       '.png','.svg','.ico','.manifest','.py','.cmd','.html','.css','.js','.yml','.yaml',''}

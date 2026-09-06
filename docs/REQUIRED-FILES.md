@@ -4,7 +4,7 @@
 
 The current installer accepts **ETS2 VR 1.60.1.1007** on Steam's **oculus** branch and checks the executable's exact fingerprint. A newer Steam update may need a matching preview release. If setup reports a different game version, stop there and check for an updated preview.
 
-**OpenXR and DirectX 11 are required.** The launcher selects OpenXR; the renderer processes the D3D11 eye images. Virtual Desktop users should select VDXR.
+**OpenXR and DirectX 11 are required.** The launcher selects DirectX 11 and OpenXR; the renderer processes the D3D11 eye images. Virtual Desktop users should select VDXR.
 
 ## File fingerprints
 
@@ -19,16 +19,17 @@ Setup checks file contents against the SHA-256 fingerprints below. Matching file
 | `nvngx_dlss.dll` | 310.8.0.0 | 58,956,400 | `c85f971ce023c9f3492fc7455f0b01a24ba18ea39636407a846902c4360b0b7e` |
 | `nvngx_dlssnr.dll` | 310.8.0.0 | 165,840,496 | `e16bcf15e16e13f527491cdf7845b2fe6521a738d8f7c9c721866a8496e1fc8e` |
 
-## Acquisition evidence
+## Download help
 
-**ReShade:** the [official full add-on installer](https://reshade.me/downloads/ReShade_Setup_6.8.0_Addon.exe) contains the tested runtime. Leave it as an EXE in Required files. Setup reads the embedded ZIP; it does not execute that installer. An already extracted exact `ReShade64.dll` is also accepted.
+- **ReShade:** use the [official 6.8.0 full add-on installer](https://reshade.me/downloads/ReShade_Setup_6.8.0_Addon.exe). Setup reads it as data; you do not need to run it separately.
+- **Snowymoon:** use Lighting **2.5.7** from [the author](https://snowymoon.io/) with your own subscription. Keep the ZIP intact. Activate in game when prompted.
+- **Classic add-on:** download the standalone **renodx-dlss5.addon64** from [this release](https://github.com/yumlevi/renodx-dlss-installer/releases/tag/latest), version **0.2026.827.2036**. The `-v2.5` file and newer ShortFuse tools are different builds.
+- **Models:** find **DLSS310.8.0-Streamline2.13.zip** in [RenoDX Discord](https://discord.com/invite/renodx) → **dlss5-downloads**. Extract both listed NVIDIA DLLs. Attachment links can expire; obtain a fresh link from the same post. Do not substitute `streamline.zip` or an older-RTX patch.
 
-**Snowymoon:** obtain the [2.5.7 ZIP](https://cdn.snowymoondl.net/lighting_v2/ets2ats_lighting_v2_5_7_snowymoon.io.zip) through the [author](https://snowymoon.io/), using your own access. Setup extracts only `dxgi.dll`. The ZIP's other optional DLSS file is not used; the preview requires the separately listed 310.8 model. Do not copy subscriber account files into the release or Required files folder.
+If a file is unavailable or rejected, stop and report the exact message. Renaming a different file does not make it compatible.
 
-**Classic consumer:** the original tested download came from [yumlevi's community installer release](https://github.com/yumlevi/renodx-dlss-installer/releases/tag/latest). On September 6, GitHub's release metadata still listed `renodx-dlss5.addon64`, asset **534399348**, with the exact fingerprint above. The separate `renodx-dlss5-v2.5.addon64` asset has the same size but a different hash. Download only the standalone matching add-on; running another installer is unnecessary. This establishes acquisition provenance and current metadata, not a release-specific redistribution grant from the consumer's original author. The preview does not repackage it.
+## System checks
 
-**310.8 models:** the tested `DLSS310.8.0-Streamline2.13.zip` is 187,288,978 bytes. Its two model entries match the table exactly. The retained download record identifies Discord channel **1545049227321810974**, attachment **1545050050609025114**. The project owner supplied a [working download link](https://cdn.discordapp.com/attachments/1545049227321810974/1545050050609025114/DLSS310.8.0-Streamline2.13.zip?ex=6a9eaffd&is=6a9d5e7d&hm=9497e1aa86dccdbc5116dbffad5000dc699a89f9c71636797082f8678617d31d&); its headers returned HTTP 200 and the expected archive length on September 6. This link expires **7 September 2026, 12:37 UTC**. A durable original message link is still needed. Search for the exact archive name in the RenoDX community's dlss5-downloads channel; the filename alone does not replace the setup hash check. After expiry, open the community and obtain a refreshed attachment link from that archive post. The offline guide changes its download button to the Discord fallback after the stated expiry.
+Setup requires Windows 11 x64, an RTX 50-series primary adapter with 16 GB or more physical VRAM, driver 616.64 or newer, the installed NVIDIA NGX component, a valid x64 OpenXR runtime, the Visual C++ x64 runtime and 8 GB free on the same NTFS drive as ETS2. Checks use local files and hardware information; setup does not download or run third-party installers.
 
-The current newer ShortFuse add-on, Krish V4.7, patched older-RTX model and official SDK's differently versioned model are not tested substitutes. If the listed downloads are unavailable, report that acquisition problem instead of bypassing the installer checks.
-
-A [September 4 mod-author guide](https://www.nexusmods.com/riseofthetombraider/mods/288) independently names RenoDX → dlss5-downloads → this exact archive. This is a community acquisition route, not a permanent direct download. Do not substitute the adjacent `streamline.zip` on the Classic add-on release page: its [issue report](https://github.com/yumlevi/renodx-dlss-installer/issues/1) identifies a different neural-model fingerprint.
+The VRAM check uses dedicated memory reported by DXGI, allowing for up to 1 GB reserved by the driver on a 16 GB card. Shared system RAM does not count. The launcher repeats the hardware/runtime checks and verifies the prepared files and game archives before starting. DirectX 11 and OpenXR are selected automatically.

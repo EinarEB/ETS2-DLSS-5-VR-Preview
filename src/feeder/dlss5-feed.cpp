@@ -7057,7 +7057,7 @@ static void DrawOverlay(reshade::api::effect_runtime *rt)
     }
     if (g_cfg.stereo_mode == 1 && g_cfg.stereo_depth_required)
     {
-        ImGui::TextUnformatted("ETS2 DLSS 5 VR Preview v0.1 - candidate 21");
+        ImGui::TextUnformatted("ETS2 DLSS 5 VR Preview v0.1 - v0.1");
         ImGui::TextWrapped("This panel controls the headset. Use VR color look below to choose its grading. The Home tab on the monitor selects desktop shaders.");
         ImGui::TextWrapped("Style, Intensity, Tone and Structure: expand 'DLSS 5 Neural Rendering' in this Add-ons tab. Those controls also affect VR.");
         ImGui::TextWrapped("Style selects Default, Natural or Cinematic. In the tested 310.8 runtime, preset hints 1/2/3 select the same weights; they do not provide three extra models.");

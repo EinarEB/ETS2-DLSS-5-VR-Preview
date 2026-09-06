@@ -81,13 +81,22 @@ internal sealed class PreviewSetup : PreviewForm {
     static void CreateHandles(Control parent){var handle=parent.Handle;foreach(Control child in parent.Controls)CreateHandles(child);parent.PerformLayout();}
     async void CheckFiles(object sender,EventArgs args) {
         if(busy)return;SetupInputs input;try{input=Input();}catch(Exception e){status.Text=e.Message;return;}
-        Busy(true);cancel.Visible=false;status.Text="Checking your downloads…";
+        Busy(true);cancel.Visible=false;status.Text="Checking your PC, downloads and install location…";
         try {
             var results=await Task.Run(()=>SetupEngine.CheckInputs(input,Package));ShowChecks(results);
-            var ready=results.All(r=>r.ready);Busy(false);install.Enabled=ready;
+            var ready=results.All(r=>r.ready);
+            if(ready) {
+                try {await Task.Run(()=>{using(var plan=SetupEngine.Validate(input,Package,s=>{},CancellationToken.None)){};});
+                    results.Insert(0,new InputCheck{name="PC and install location",ready=true,message="Ready — all requirements passed"});
+                }catch(Exception e){ready=false;results.Insert(0,new InputCheck{name="PC or install location",message=e.Message});}
+            } else {
+                var errors=await Task.Run(()=>Requirements.Errors(Requirements.Probe()));
+                results.Insert(0,new InputCheck{name="PC requirements",ready=errors.Length==0,message=errors.Length==0?"Ready":String.Join(" ",errors)});
+            }
+            ShowChecks(results);Busy(false);install.Enabled=ready;
             if(results.Any(r=>r.name=="Euro Truck Simulator 2"&&!r.ready))ShowLocations(true);
-            status.Text=ready?"All files ready. You can prepare the preview.":"Some files need attention.";
-            detail.Text=ready?"Setup creates a separate preview with its own settings.":"Add the missing files, then check again.";
+            status.Text=ready?"Ready to install.":"Setup is blocked. Review the checks above.";
+            detail.Text=ready?"Creates a separate preview. No bundled extras or system changes.":results.First(r=>!r.ready).message;
         }catch(Exception e){Busy(false);status.Text="Could not complete the file check.";detail.Text=e.Message;}
         if(closeWhenDone)Close();
     }
@@ -114,8 +123,8 @@ internal sealed class PreviewSetup : PreviewForm {
         var files=new Panel{Location=new Point(32,118),Size=new Size(704,57)};Controls.Add(files);BrowseField(required,"Required files folder",0,false,files);
         var downloads=ButtonAt("Download guide ↗",32,189,168);downloads.FlatAppearance.BorderSize=0;downloads.BackColor=BackColor;downloads.Click+=(s,e)=>Open(Path.Combine(Package,"Read me first.html"));Controls.Add(downloads);
         var folder=ButtonAt("Open folder",212,189,132);folder.FlatAppearance.BorderSize=0;folder.BackColor=BackColor;folder.Click+=(s,e)=>{if(Directory.Exists(required.Text))Open(required.Text);else status.Text="Choose the Required files folder first.";};Controls.Add(folder);
-        check.Text="Check files";check.Location=new Point(568,189);check.Size=new Size(168,36);check.FlatStyle=FlatStyle.Flat;check.FlatAppearance.BorderColor=Color.FromArgb(192,204,198);check.Click+=CheckFiles;Controls.Add(check);
-        items.Location=new Point(32,238);items.Size=new Size(704,164);items.View=View.Details;items.FullRowSelect=true;items.HeaderStyle=ColumnHeaderStyle.Nonclickable;items.Columns.Add("Component",292);items.Columns.Add("Status",386);items.BorderStyle=BorderStyle.FixedSingle;items.BackColor=Color.White;Controls.Add(items);
+        check.Text="Check requirements";check.Location=new Point(558,189);check.Size=new Size(178,36);check.FlatStyle=FlatStyle.Flat;check.FlatAppearance.BorderColor=Color.FromArgb(192,204,198);check.Click+=CheckFiles;Controls.Add(check);
+        items.Location=new Point(32,238);items.Size=new Size(704,164);items.View=View.Details;items.FullRowSelect=true;items.HeaderStyle=ColumnHeaderStyle.Nonclickable;items.Columns.Add("Check",238);items.Columns.Add("Status",440);items.BorderStyle=BorderStyle.FixedSingle;items.BackColor=Color.White;Controls.Add(items);
         var dest=new Panel{Location=new Point(32,420),Size=new Size(704,58)};Controls.Add(dest);BrowseField(destination,"Install location",0,false,dest);
         shortcut.Text="Create a desktop shortcut";shortcut.Checked=true;shortcut.Location=new Point(32,488);shortcut.Size=new Size(310,26);Controls.Add(shortcut);
         locationToggle.Text="Game and Documents folders +";locationToggle.Location=new Point(24,519);locationToggle.Size=new Size(292,28);locationToggle.FlatStyle=FlatStyle.Flat;locationToggle.FlatAppearance.BorderSize=0;locationToggle.TextAlign=ContentAlignment.MiddleLeft;locationToggle.Click+=(s,e)=>ShowLocations(!locations.Visible);Controls.Add(locationToggle);
@@ -127,7 +136,7 @@ internal sealed class PreviewSetup : PreviewForm {
         cancel.Text="Cancel";cancel.Location=new Point(262,16);cancel.Size=new Size(105,44);cancel.Visible=false;cancel.FlatStyle=FlatStyle.Flat;cancel.Click+=(s,e)=>{if(cancellation!=null)cancellation.Cancel();status.Text="Stopping at a safe point…";cancel.Enabled=false;};actions.Controls.Add(cancel);
         open.Text="Open launcher";open.Location=new Point(0,16);open.Size=new Size(246,44);open.Visible=false;open.BackColor=Accent;open.ForeColor=Color.White;open.FlatStyle=FlatStyle.Flat;open.FlatAppearance.BorderSize=0;open.Click+=(s,e)=>Open(Path.Combine(installedRoot,"ETS2 VR Preview.exe"));actions.Controls.Add(open);
         progress.Location=new Point(436,34);progress.Size=new Size(268,8);progress.Visible=false;actions.Controls.Add(progress);
-        status.Location=new Point(0,73);status.Size=new Size(704,23);status.Text="Add your downloads, then check the files.";actions.Controls.Add(status);
+        status.Location=new Point(0,73);status.Size=new Size(704,23);status.Text="Add your downloads, then check requirements.";actions.Controls.Add(status);
         detail.Location=new Point(0,102);detail.Size=new Size(704,28);detail.ForeColor=Muted;detail.Font=new Font("Segoe UI",9);detail.Text="Use your own Snowymoon subscription and model files.";actions.Controls.Add(detail);
         var tips=new ToolTip();items.ShowItemToolTips=true;status.AutoEllipsis=true;detail.AutoEllipsis=true;
         status.TextChanged+=(s,e)=>tips.SetToolTip(status,status.Text);detail.TextChanged+=(s,e)=>tips.SetToolTip(detail,detail.Text);
@@ -139,9 +148,10 @@ internal sealed class PreviewSetup : PreviewForm {
         try {
             Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
             PreviewForm.RenderOnly=args.Contains("--render");
+            if(args.Contains("--requirements")){var s=Requirements.Probe();var errors=Requirements.Errors(s);File.WriteAllText(Path.Combine(Package,"requirements-check.json"),new JavaScriptSerializer().Serialize(new{passed=errors.Length==0,errors=errors,gpu=s.gpu,dedicated_bytes=s.dedicatedBytes,driver=s.driver,windows_build=s.windowsBuild,ngx=s.ngx,game_launched=false}));return errors.Length==0?0:1;}
             if(args.Length==2&&(args[0]=="--check"||args[0]=="--prepare")){
                 var input=new JavaScriptSerializer().Deserialize<SetupInputs>(File.ReadAllText(args[1]));
-                if(args[0]=="--check")File.WriteAllText(Path.Combine(Package,"input-check.json"),new JavaScriptSerializer().Serialize(SetupEngine.CheckInputs(input,Package)));
+                if(args[0]=="--check"){using(var plan=SetupEngine.Validate(input,Package,s=>{},CancellationToken.None)){};File.WriteAllText(Path.Combine(Package,"input-check.json"),new JavaScriptSerializer().Serialize(SetupEngine.CheckInputs(input,Package)));}
                 else {var prepared=SetupEngine.Build(input,Package,s=>{},CancellationToken.None);if(input.desktop_shortcut)DesktopShortcut.Create((string)prepared["renderer_root"]);}return 0;
             }
             using(var app=new PreviewSetup()){

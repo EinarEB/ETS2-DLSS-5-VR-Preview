@@ -53,6 +53,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
         if(!Directory.Exists(root))throw new Exception("The prepared preview folder is missing.");
     }
     void Verify() {
+        Requirements.Require();
         foreach(var item in (Dictionary<string,object>)settings["checked_files"]){
             var file=Inside(Path.Combine(root,item.Key));
             if(!File.Exists(file)||HashFile(file)!=(string)item.Value)throw new Exception("A prepared preview component changed: "+Path.GetFileName(file)+". Prepare a fresh preview from the release download.");
@@ -67,7 +68,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
         if(runtime.IndexOf("fixture",StringComparison.OrdinalIgnoreCase)>=0||runtime.IndexOf("offline",StringComparison.OrdinalIgnoreCase)>=0)throw new Exception("An offline test runtime is selected in Windows. The headset runtime is required.");
     }
     ProcessStartInfo StartInfo() {
-        var info=new ProcessStartInfo(S("game_exe"),"-openxr -nointro -noworkshop -pure -homedir \""+S("game_home")+"\"");
+        var info=new ProcessStartInfo(S("game_exe"),"-rdevice dx11 -openxr -nointro -noworkshop -pure -homedir \""+S("game_home")+"\"");
         info.WorkingDirectory=Path.GetDirectoryName(S("game_exe"));info.UseShellExecute=false;
         foreach(string key in new [] {"XR_RUNTIME_JSON","ETS2_FEED_OBSERVE_ONLY","ETS2_FEED_CAPTURE_PLANE_MASK","ETS2_FEED_CAPTURE_AFTER","ETS2_XR_IMAGE_AFTER","ETS2_XR_IMAGE_DIR"})info.EnvironmentVariables.Remove(key);
         info.EnvironmentVariables["SteamAppId"]="227300";info.EnvironmentVariables["SteamGameId"]="227300";
@@ -227,7 +228,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
     void SaveDiagnostics(object sender,EventArgs args) {
         try {
             Dictionary<string,object> runtime=null;try{runtime=ReadPreviewStatus();}catch{}
-            var report=new {schema=1,preview="0.1-candidate21",created_utc=DateTime.UtcNow.ToString("o"),game_running=Active(),quality=ReadQuality(),active_quality=activeQuality,
+            var report=new {schema=1,preview="0.1",created_utc=DateTime.UtcNow.ToString("o"),game_running=Active(),quality=ReadQuality(),active_quality=activeQuality,
                 recent_neural_evaluations=Active()&&HasNeuralFrame(),vr_image_status=runtime,component_hashes=settings["checked_files"]};
             var path=Path.Combine(root,"preview-diagnostics.json");PreviewFiles.AtomicText(path,json.Serialize(report));
             status.Text="Diagnostics saved in preview-diagnostics.json.\nIt contains component versions and status; no saves, account files or images.";
@@ -250,7 +251,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
         comparisonStatus.Location=new Point(28,469);comparisonStatus.Size=new Size(584,30);comparisonStatus.Font=new Font("Segoe UI",9);comparisonStatus.ForeColor=Color.FromArgb(82,97,109);RefreshComparisonStatus();
         var files=QuietButton("Open captures",20,510,136);files.Click+=(s,e)=>OpenFolderOrGuide(Path.Combine(root,"DLSS5-Captures"));
         var guide=QuietButton("Setup guide ↗",166,510,136);guide.Click+=(s,e)=>OpenFolderOrGuide(Path.Combine(root,"Read me first.html"));
-        var more=QuietButton("More options +",454,510,166);more.Click+=(s,e)=>{moreOptions.Visible=!moreOptions.Visible;more.Text=moreOptions.Visible?"Fewer options −":"More options +";ClientSize=new Size(640,moreOptions.Visible?674:554);};
+        var more=QuietButton("More options +",454,510,166);more.Click+=(s,e)=>{AutoScrollPosition=Point.Empty;moreOptions.Visible=!moreOptions.Visible;more.Text=moreOptions.Visible?"Fewer options −":"More options +";int height=moreOptions.Visible?674:554;AutoScroll=true;AutoScrollMinSize=new Size(0,height);ClientSize=new Size(640,RenderOnly?height:Math.Min(height,Math.Max(440,Screen.FromControl(this).WorkingArea.Height-80)));};
         var diagnostic=QuietButton("Save diagnostics",206,25,164);diagnostic.Click+=SaveDiagnostics;moreOptions.Controls.Add(diagnostic);
         restore.Text="Restore settings";restore.Location=new Point(386,25);restore.Size=new Size(198,36);restore.Enabled=false;restore.FlatStyle=FlatStyle.Flat;restore.FlatAppearance.BorderColor=Color.FromArgb(192,204,198);restore.Click+=RestoreOriginal;moreOptions.Controls.Add(restore);
         Controls.AddRange(new Control[]{launch,capture,status,comparisonStatus,files,guide,more});timer.Interval=1000;timer.Tick+=Tick;

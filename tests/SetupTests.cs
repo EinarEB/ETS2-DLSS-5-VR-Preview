@@ -10,6 +10,8 @@ using System.Web.Script.Serialization;
 
 internal sealed class TestPlatform : SetupPlatform {
     internal long free=20L*1024*1024*1024;internal string format="NTFS";internal bool runtime=true;
+    internal string[] errors=new string[0];
+    internal override string[] SystemErrors(){return errors;}
     internal override string DriveFormat(string root){return format;}
     internal override long FreeBytes(string root){return free;}
     internal override bool RuntimePresent(string name){return runtime;}
@@ -60,6 +62,7 @@ internal static class SetupTests {
             Reject(()=>validate(Copy(input,Path.Combine(docs,"Preview"))),"destination inside Documents rejected");
             Reject(()=>validate(Copy(input,Path.Combine(package,"Preview"))),"destination inside package rejected");
             var bad=Copy(input,dest);bad.game_exe=Path.Combine(root,"eurotrucks2.exe");Reject(()=>validate(bad),"wrong executable layout rejected");
+            platform.errors=new[]{"Unsupported hardware"};Reject(()=>validate(input),"system requirement failure blocks setup");Check(!Directory.Exists(dest),"system rejection writes no destination");platform.errors=new string[0];
             platform.free=1024;Reject(()=>validate(input),"insufficient disk space rejected");platform.free=20L*1024*1024*1024;
             platform.format="exFAT";Reject(()=>validate(input),"non-NTFS rejected");platform.format="NTFS";
             platform.runtime=false;Reject(()=>validate(input),"missing VC runtime rejected");platform.runtime=true;
