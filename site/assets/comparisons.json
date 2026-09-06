@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "scenes": {
+    "cab": {
+      "title": "cab interior",
+      "width": 2504,
+      "height": 2600,
+      "captured": "6 September 2026, 17:08",
+      "original": "assets/cab-original.webp",
+      "presets": {
+        "low": null,
+        "medium": {
+          "image": "assets/cab-medium.webp",
+          "note": "Recorded in game on the earlier working build. Natural \u00b7 intensity 2 \u00b7 model preset 1 \u00b7 full neural blend.",
+          "image_full": "assets/cab-medium.png"
+        },
+        "high": null,
+        "ultra": null
+      },
+      "original_full": "assets/cab-original.png"
+    },
+    "exterior": {
+      "title": "truck exterior",
+      "width": 2504,
+      "height": 2600,
+      "captured": "6 September 2026, 17:09",
+      "original": "assets/exterior-original.webp",
+      "presets": {
+        "low": null,
+        "medium": {
+          "image": "assets/exterior-medium.webp",
+          "note": "Recorded in game on the earlier working build. Natural \u00b7 intensity 2 \u00b7 model preset 1 \u00b7 full neural blend.",
+          "image_full": "assets/exterior-medium.png"
+        },
+        "high": null,
+        "ultra": null
+      },
+      "original_full": "assets/exterior-original.png"
+    }
+  }
+}

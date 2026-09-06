@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="170" viewBox="0 0 1100 170" role="img" aria-labelledby="title desc">
+  <title id="title">View interactive comparisons</title><desc id="desc">Inside the cab and outside the truck. Drag the before and after slider.</desc>
+  <rect width="1100" height="170" rx="16" fill="#15251b"/>
+  <rect x="22" y="22" width="126" height="126" rx="12" fill="#c5df86"/>
+  <path d="M65 106L106 65M65 65H106V106" fill="none" stroke="#15251b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="183" y="76" font-family="Segoe UI,Arial,sans-serif" font-size="37" font-weight="700" fill="#f1f3e9">VIEW INTERACTIVE COMPARISONS</text>
+  <text x="185" y="120" font-family="Segoe UI,Arial,sans-serif" font-size="25" fill="#c5df86">Cab + exterior · Drag the before / after slider</text>
+</svg>
