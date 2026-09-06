@@ -25,6 +25,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/package.py --label 0.1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Show failed test details
+        if: failure()
+        shell: pwsh
+        run: |
+          foreach ($file in @('build/tests/setup/output.txt','build/tests/launcher/output.txt','build/tests/launcher/result.json','build/tests/setup/requirements-output.txt','build/tests/blend/results.json')) {
+            if (Test-Path -LiteralPath $file) { Write-Output $file; Get-Content -LiteralPath $file }
+          }
       - name: Publish the tested package
         shell: pwsh
         env:
