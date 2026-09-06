@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="ETS2 VR neural-rendering preview. Explore real cab and truck captures with an original / neural comparison slider."><meta name="theme-color" content="#111714">
+<title>ETS2 DLSS 5 VR Preview — comparisons</title><link rel="stylesheet" href="style.css"><script src="app.js" defer></script>
+</head><body>
+<header class="topbar"><a class="brand" href="./"><span class="mark" aria-hidden="true">↗</span> ETS2 VR Preview</a><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview">GitHub repository ↗</a></header>
+<main>
+<div class="intro"><p class="eyebrow">DLSS 5 · COMMUNITY PREVIEW · v0.1</p><h1>A different light on the road.</h1><p class="lede">Neural rendering for Euro Truck Simulator 2 in VR.<br>Compare the original scene with the neural edit, one eye at a time.</p></div>
+<section class="showcase" aria-label="Interactive image comparison">
+<div class="controls">
+<div><span class="control-label" id="scene-label">01 · Choose a scene</span><div class="segments" role="group" aria-labelledby="scene-label"><button data-scene="cab" aria-pressed="true">Inside the cab</button><button data-scene="exterior" aria-pressed="false">Outside the truck</button></div></div>
+<div><span class="control-label" id="preset-label">02 · Choose a quality preset</span><div class="segments presets" role="group" aria-labelledby="preset-label"><button data-preset="low" aria-pressed="false">Low</button><button data-preset="medium" aria-pressed="true">Medium</button><button data-preset="high" aria-pressed="false">High</button><button data-preset="ultra" aria-pressed="false">Ultra</button></div></div>
+</div>
+<div class="comparison-layout"><div class="viewer-column">
+<div class="viewer" id="viewer" aria-busy="true">
+<img id="after-image" alt="" width="2504" height="2600" draggable="false"><img id="before-image" alt="Captured original VR scene before the neural edit" width="2504" height="2600" draggable="false">
+<div class="image-labels"><span>Original</span><span id="after-label">Medium · neural edit</span></div><div class="divider" aria-hidden="true"><span>‹ ›</span></div>
+<input id="wipe" type="range" min="0" max="100" value="50" aria-label="Original image coverage" aria-valuetext="50 percent original, 50 percent neural edit">
+<div class="viewer-message" id="viewer-message" role="status">Loading the captured frame…</div></div>
+<div class="under-viewer"><p id="drag-hint">Drag to compare · use ← → on the slider</p><div><button class="text-button" id="show-original">Original only</button><span aria-hidden="true"> / </span><button class="text-button" id="show-neural">Neural only</button></div></div>
+<div class="image-links"><a id="original-link" target="_blank" rel="noopener">Open full-size original ↗</a><a id="result-link" target="_blank" rel="noopener">Open full-size result ↗</a></div>
+</div><aside>
+<p class="eyebrow" id="sample-kind">REAL VR CAPTURE</p><h2 id="preset-title">Medium</h2><p id="preset-description">The starting point for smoother frame delivery.</p>
+<dl class="specs"><div><dt>Passes per eye</dt><dd id="passes">1</dd></div><div><dt>Work resolution</dt><dd id="resolution">65%</dd></div><div><dt>Centered square</dt><dd id="crop">75%</dd></div></dl>
+<p class="small">The square is centered in each eye. Its percentage is measured against the shorter eye side; the surrounding image keeps the original rendering.</p>
+<div class="sample-note"><span class="status-dot" aria-hidden="true"></span><p id="sample-note" aria-live="polite">Loading capture details…</p></div><p class="small" id="capture-details"></p>
+<a class="button" href="setup.html">Read the setup guide <span aria-hidden="true">↗</span></a><p class="small release-note"><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/archive/refs/heads/main.zip">Download the source preview</a>. The installer download awaits the final headset test.</p>
+</aside></div></section>
+<section class="notes" aria-label="About the comparison"><div><h2>What these images show</h2><p>Real input and output from the same captured VR frame. Each view shows a full left-eye image at its original proportions. Full-resolution lossless images are available above so you can inspect fine detail.</p><p>The comparison is captured before optional ReShade color grading. The original already includes Snowymoon lighting; the slider isolates the neural edit.</p></div><div><h2>What is still being tested</h2><p>Still images cannot show flicker in motion, stereo comfort or game performance. These captures come from the earlier working build; the public source candidate still needs its final headset regression test.</p><p>Low, High and Ultra comparisons of these exact scenes are queued for processing. Their controls show the real settings, and will show images once the saved-frame runs have been verified.</p></div></section>
+</main><footer><span>Independent community project · Experimental preview</span><div><a href="credits.html">Credits & licenses</a><a href="assets/provenance.json">Image provenance</a></div><p>Not affiliated with or endorsed by SCS Software, NVIDIA, Snowymoon, ReShade or RenoDX. Third-party software and model files are supplied separately by the user.</p></footer>
+</body></html>

@@ -2,8 +2,8 @@
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit,unquote
-import hashlib,json
-root=Path(__file__).resolve().parents[1]/'site'
+import hashlib,json,sys
+root=Path(__file__).resolve().parents[1]/(sys.argv[1] if len(sys.argv)>1 else 'site')
 class Links(HTMLParser):
     def __init__(self):super().__init__();self.targets=[]
     def handle_starttag(self,tag,attrs):
