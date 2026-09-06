@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "recorded_utc": "2026-09-06T23:03:59.774736+00:00",
+  "recorded_utc": "2026-09-06T23:19:57.223814+00:00",
   "game_launched": false,
   "setup_checks": 43,
   "requirement_checks": 25,
@@ -21,7 +21,7 @@
     "src/launcher/Requirements.cs": "6ffcb9bd097fc15d4a86cefb5c5ba5e688d2b75ed3873ff9fa971144e52e18b4",
     "src/launcher/SetupEngine.cs": "6d9c511473a1ae532e1e69f7a0c7b6a2177d48566604607b217361d861bf0398",
     "tests/preview_blend_test.cpp": "c9d3d4e67a21771e391b5f1f22cdbb72e88d8197dcf321bcfeab61ff2351eed4",
-    "tests/ReleaseLauncherTests.cs": "02ec61f2731de80d61993ce011b7992651a48cfba839e553ea3398a2feabf00d",
+    "tests/ReleaseLauncherTests.cs": "a38ff7bdf4cdd9eb0f6f42750d775a389a8a18b076853ca80c0621b0e8cb2bb1",
     "tests/RequirementTests.cs": "75b8d314abeeaa0c3513d892a64e66ece09608717314d0bb54ae9a88d3074bf2",
     "tests/SetupTests.cs": "db44e226d91135953e1fd6dd5f0b71cf39cc54c2e66dee08dd13cf772e1e89cd"
   }

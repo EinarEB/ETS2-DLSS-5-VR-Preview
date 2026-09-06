@@ -2,7 +2,7 @@ name: Build and publish preview
 on:
   push:
     branches: [main]
-    paths: [release-version.txt, .github/workflows/release.yml]
+    paths: [release-version.txt, .github/workflows/release.yml, tests/ReleaseLauncherTests.cs]
   workflow_dispatch:
 permissions:
   contents: write

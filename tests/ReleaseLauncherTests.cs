@@ -46,7 +46,10 @@ internal static class ReleaseLauncherTests {
     static Dictionary<string,string> Values(string text){var r=new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);string section="";foreach(var raw in text.Replace("\r\n","\n").Split('\n')){var l=raw.Trim();if(l.StartsWith("[")&&l.EndsWith("]")){section=l;continue;}int eq=l.IndexOf('=');if(eq>0&&!l.StartsWith(";")&&!l.StartsWith("#"))r[section+"/"+l.Substring(0,eq).Trim()]=l.Substring(eq+1).Trim();}return r;}
     static bool Exactly(string before,string after,params string[] changes){var a=Values(before);var b=Values(after);foreach(var c in changes){int eq=c.IndexOf('=');a[c.Substring(0,eq)]=c.Substring(eq+1);}return a.Count==b.Count&&a.All(x=>b.ContainsKey(x.Key)&&b[x.Key]==x.Value);}
     static int BackupCount(){return Directory.Exists(P("settings-backups"))?Directory.GetDirectories(P("settings-backups")).Length:0;}
-    static string LatestBackup(){return Directory.GetDirectories(P("settings-backups")).OrderBy(p=>p,StringComparer.Ordinal).Last();}
+    static string[] BackupNames(){return Directory.Exists(P("settings-backups"))?Directory.GetDirectories(P("settings-backups")):new string[0];}
+    // Multiple writes can share one clock tick. Identify the actual new folder,
+    // never infer creation order from a timestamp followed by a random suffix.
+    static string CreatedBackup(string[] before){return BackupNames().Except(before,StringComparer.OrdinalIgnoreCase).Single();}
     static void Observe(params int[][] rows){Write(P("native-input-observer.json"),Json.Serialize(new{actual_nr_parameters=rows.Select(r=>new{eye=r[0],pass=r[1],frame_id=r[2],result=r[3]}).ToArray()}));}
     static void Two(){Observe(new[]{0,1,10,1},new[]{1,1,10,1},new[]{0,2,10,1},new[]{1,2,10,1});}
     static void One(){Observe(new[]{0,1,10,1},new[]{1,1,10,1});}
@@ -103,7 +106,7 @@ internal static class ReleaseLauncherTests {
                     Write(P("ReShade.ini"),Desktop().Replace("NRPreset=3\r\n","NRPreset="+((choice+1)%4)+"\r\n"));
                     Call("RefreshAppearance");
                     string desktop=File.ReadAllText(P("ReShade.ini")),vr=File.ReadAllText(P("ReShadeVR.ini"));
-                    var before=Snapshot();int backups=BackupCount();
+                    var before=Snapshot();int backups=BackupCount();var backupNames=BackupNames();
                     int styleBefore=((ComboBox)Get("style")).SelectedIndex,lookBefore=((ComboBox)Get("look")).SelectedIndex,qualityBefore=((ComboBox)Get("quality")).SelectedIndex;
                     decimal strengthBefore=((NumericUpDown)Get("intensity")).Value;
                     ((ComboBox)Get("model")).SelectedIndex=choice;
@@ -111,7 +114,7 @@ internal static class ReleaseLauncherTests {
                     Check(Exactly(vr,File.ReadAllText(P("ReShadeVR.ini")),"[RenoDX.DLSS5]/NRPreset="+choice),"model "+choice+" event changes only VR RenoDX NRPreset, preserving divergent style, intensity, look and unrelated section keys");
                     Check(FHash("dlss5-feed.cfg")==before["dlss5-feed.cfg"],"model "+choice+" event keeps all quality, blend and feeder config bytes unchanged");
                     Check(((ComboBox)Get("model")).SelectedIndex==choice&&((ComboBox)Get("style")).SelectedIndex==styleBefore&&((ComboBox)Get("look")).SelectedIndex==lookBefore&&((ComboBox)Get("quality")).SelectedIndex==qualityBefore&&((NumericUpDown)Get("intensity")).Value==strengthBefore,"model "+choice+" refresh keeps all other displayed selections unchanged");
-                    Check(BackupCount()==backups+1&&Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(LatestBackup(),x)))==before[x]),"model "+choice+" event makes one exact pre-edit backup set");
+                    Check(BackupCount()==backups+1&&Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(CreatedBackup(backupNames),x)))==before[x]),"model "+choice+" event makes one exact pre-edit backup set");
                 }
                 ResetConfigs();var unchanged=Snapshot();int count=BackupCount();Select("model",-1);SaveAppearance("model");
                 Check(Same(unchanged)&&BackupCount()==count,"unset model selection cannot erase NRPreset or trigger an appearance transaction");
@@ -136,10 +139,10 @@ internal static class ReleaseLauncherTests {
                 Call("SetOptionsEnabled",true);Check(options.All(x=>((Control)Get(x)).Enabled),"idle control gate re-enables model and all other options");
             });
             Case("model preset partial-save rollback",()=>{
-                ResetConfigs();var before=Snapshot();Select("model",0);int backups=BackupCount();
+                ResetConfigs();var before=Snapshot();Select("model",0);int backups=BackupCount();var backupNames=BackupNames();
                 using(var hold=new FileStream(P("ReShadeVR.ini"),FileMode.Open,FileAccess.Read,FileShare.Read)){SaveAppearance("model");}
                 Check(Same(before),"locked second INI rolls back the first INI after a model edit without changing any original bytes");
-                Check(BackupCount()==backups+1&&Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(LatestBackup(),x)))==before[x]),"failed model edit retains one exact recovery backup set");
+                Check(BackupCount()==backups+1&&Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(CreatedBackup(backupNames),x)))==before[x]),"failed model edit retains one exact recovery backup set");
                 Check(((ComboBox)Get("model")).SelectedIndex==3&&((Label)Get("status")).Text.StartsWith("Could not save appearance."),"failed model edit restores its displayed saved value and reports the error");
             });
             Case("appearance selected-control edits",()=>{
@@ -150,7 +153,7 @@ internal static class ReleaseLauncherTests {
                 ResetConfigs();desk=File.ReadAllText(P("ReShade.ini"));vr=File.ReadAllText(P("ReShadeVR.ini"));cfg=FHash("dlss5-feed.cfg");Strength(0.91m);SaveAppearance("intensity");Check(Exactly(desk,File.ReadAllText(P("ReShade.ini")),"[RenoDX.DLSS5]/NRIntensity=0.91"),"intensity edit changes only desktop NRIntensity");Check(Exactly(vr,File.ReadAllText(P("ReShadeVR.ini")),"[RenoDX.DLSS5]/NRIntensity=0.91"),"intensity edit changes only VR NRIntensity, preserving divergent styles/model");Check(FHash("dlss5-feed.cfg")==cfg,"intensity edit leaves quality/config bytes untouched");
                 for(int i=0;i<3;i++){ResetConfigs();before=Snapshot();string text=File.ReadAllText(Config);Select("toggleKey",i);SaveAppearance("toggleKey");int key=new[]{145,19,0}[i];Check(Exactly(text,File.ReadAllText(Config),"/preview_toggle_key="+key),"compare key choice "+i+" changes only preview_toggle_key");Check(FHash("ReShade.ini")==before["ReShade.ini"]&&FHash("ReShadeVR.ini")==before["ReShadeVR.ini"],"compare key choice "+i+" leaves both appearance INIs byte-identical");}
                 ResetConfigs();before=Snapshot();count=BackupCount();Call("SaveAppearance",null,EventArgs.Empty);Check(Same(before)&&BackupCount()==count,"unrecognized appearance sender changes nothing");
-                ResetConfigs();before=Snapshot();Select("style",1);count=BackupCount();SaveAppearance("style");string backup=LatestBackup();Check(BackupCount()==count+1,"one style operation makes exactly one backup set");Check(Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(backup,x)))==before[x]),"appearance backup retains all exact pre-edit config bytes");
+                ResetConfigs();before=Snapshot();Select("style",1);count=BackupCount();var beforeStyleBackups=BackupNames();SaveAppearance("style");string backup=CreatedBackup(beforeStyleBackups);Check(BackupCount()==count+1,"one style operation makes exactly one backup set");Check(Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(backup,x)))==before[x]),"appearance backup retains all exact pre-edit config bytes");
                 ResetConfigs();before=Snapshot();((ComboBox)Get("look")).SelectedIndex=1;Check(FHash("ReShade.ini")==before["ReShade.ini"]&&FHash("dlss5-feed.cfg")==before["dlss5-feed.cfg"]&&PreviewFiles.ReadIni(File.ReadAllText(P("ReShadeVR.ini")),"GENERAL")["PresetPath"].EndsWith("Clean.ini"),"actual look selector event changes only the VR look");
                 ResetConfigs();desk=File.ReadAllText(P("ReShade.ini"));vr=File.ReadAllText(P("ReShadeVR.ini"));((NumericUpDown)Get("intensity")).Value=1.17m;Check(Exactly(desk,File.ReadAllText(P("ReShade.ini")),"[RenoDX.DLSS5]/NRIntensity=1.17")&&Exactly(vr,File.ReadAllText(P("ReShadeVR.ini")),"[RenoDX.DLSS5]/NRIntensity=1.17"),"actual intensity event writes only intensity in both INIs");
             });
@@ -158,7 +161,7 @@ internal static class ReleaseLauncherTests {
                 foreach(var field in new[]{"loadingOptions","starting","settling"}){ResetConfigs();var b=Snapshot();Select("style",1);Set(field,true);SaveAppearance("style");Check(Same(b),field+" blocks an appearance save");Set(field,false);}
                 ResetConfigs();var before=Snapshot();Select("style",1);Set("game",Process.GetCurrentProcess());SaveAppearance("style");Check(Same(before),"active session blocks appearance save");Set("game",null);
                 // Read sharing lets all snapshots/backups succeed, but denies deletion/replacement of the second target.
-                ResetConfigs();before=Snapshot();Select("style",1);int count=BackupCount();bool escaped=false;using(var hold=new FileStream(P("ReShadeVR.ini"),FileMode.Open,FileAccess.Read,FileShare.Read)){try{SaveAppearance("style");}catch{escaped=true;}}Check(!escaped,"second-file replacement failure stays within appearance handler");Check(Same(before),"second-file replacement failure rolls back the already-written desktop INI exactly");Check(BackupCount()==count+1,"partial appearance failure preserves one exact recovery backup set");string backup=LatestBackup();Check(Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(backup,x)))==before[x]),"partial appearance failure backup has exact original bytes for all files");Check(((Label)Get("status")).Text.StartsWith("Could not save appearance."),"partial appearance failure reports failure");Check(Directory.GetFiles(Base,"*.tmp-*").Length==0,"partial appearance failure cleans all replacement temporary files");
+                ResetConfigs();before=Snapshot();Select("style",1);int count=BackupCount();var recoveryBackups=BackupNames();bool escaped=false;using(var hold=new FileStream(P("ReShadeVR.ini"),FileMode.Open,FileAccess.Read,FileShare.Read)){try{SaveAppearance("style");}catch{escaped=true;}}Check(!escaped,"second-file replacement failure stays within appearance handler");Check(Same(before),"second-file replacement failure rolls back the already-written desktop INI exactly");Check(BackupCount()==count+1,"partial appearance failure preserves one exact recovery backup set");string backup=CreatedBackup(recoveryBackups);Check(Configs.All(x=>Hash(File.ReadAllBytes(Path.Combine(backup,x)))==before[x]),"partial appearance failure backup has exact original bytes for all files");Check(((Label)Get("status")).Text.StartsWith("Could not save appearance."),"partial appearance failure reports failure");Check(Directory.GetFiles(Base,"*.tmp-*").Length==0,"partial appearance failure cleans all replacement temporary files");
                 ResetConfigs();before=Snapshot();Select("toggleKey",1);using(var hold=new FileStream(Config,FileMode.Open,FileAccess.Read,FileShare.Read)){SaveAppearance("toggleKey");}Check(Same(before),"locked config toggle edit retains all originals");Check(((Label)Get("status")).Text.StartsWith("Could not save appearance."),"locked toggle config reports failure");
                 ResetConfigs();before=Snapshot();Select("style",1);count=BackupCount();using(var hold=new FileStream(Config,FileMode.Open,FileAccess.Read,FileShare.None)){SaveAppearance("style");}Check(Same(before)&&BackupCount()==count,"unreadable config prevents appearance writes before transaction begins");
             });

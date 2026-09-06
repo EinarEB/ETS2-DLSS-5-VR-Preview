@@ -1,6 +1,6 @@
 # Changes
 
-## v0.1 â€” release candidate
+## v0.1 — experimental preview
 
 - Single before/after viewer with scene, quality, style and color dropdowns: four qualities, three neural styles and three color looks, with native lossless images.
 - Simpler installer and launcher layouts, expandable secondary options, and correct idle status after a session closes.

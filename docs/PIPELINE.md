@@ -1,6 +1,6 @@
 # Rendering and settings contract
 
-The supported path is ETS2 Direct3D 11 â†’ OpenXR â†’ ReShade's windowless stereo runtime. A desktop effect runtime is never accepted as the neural image source, regardless of configuration. The classic neural consumer is the only supported consumer in this preview.
+The supported path is ETS2 Direct3D 11 → OpenXR → ReShade's windowless stereo runtime. A desktop effect runtime is never accepted as the neural image source, regardless of configuration. The classic neural consumer is the only supported consumer in this preview.
 
 1. The depth companion tracks the render lineage and accepts a matched depth pair for the two eye images. Missing or invalid depth prevents processing; it is not replaced with a guessed constant.
 2. The Vort adaptation estimates each eye's motion independently. Textures and history remain separated at the eye boundary. The final coordinate conversion into the Feed convention occurs once.
