@@ -1,0 +1,35 @@
+# Component credits and terms
+
+This is an independent, experimental ETS2 VR integration. It is not an official
+SCS Software, Snowymoon, ReShade, RenoDX, or NVIDIA release or endorsement.
+
+The preview additions use the MIT terms in `licenses/LICENSE-Preview-MIT.txt`.
+Licenses remain component-specific; the complete package is not wholly MIT.
+
+| Component | Credit, source and applicable terms |
+| --- | --- |
+| Modified DLSS5-Feeder and Feed shader | Jean-Laurent ROUZIES, [DLSS5-Feeder](https://github.com/jlrouzies-fr/DLSS5-Feeder/tree/0c0afc4305feecd5b00a3c943f22e793cffb6280), MIT. Stereo transport, controls, capture and runtime-selection changes are described in the source package. |
+| D3D11/D3D12 bridge portions | NIGos, [dlss5-bridge](https://github.com/NIGos/dlss5-bridge/tree/5e4bccfc88d60676641ca5af7c10197dd420d144), MIT. |
+| Stereo optical-flow estimator | Jakob Wapenhensch (Jak0bW), Pascal Gilcher / Marty McFly and Vortigern. [Pinned Vort source](https://github.com/vortigern11/vort_Shaders/tree/b410b9f0c0fbb83c8cb42164aaf1655fab386f4a); **CC BY-NC 4.0** for `ETS2_VortStereo_Eye.fxh`. This adaptation separates both eyes' textures/history, uses matched depth, resets invalid history and converts the final motion coordinates once. |
+| Vort wrapper, math/noise helpers and BlueNoise asset | Vortigern, the same pinned repository, MIT; retain its MIT notice. Wrapper changes are marked in source. |
+| Optional color-temperature and contrast/color effects | prod80 (Bas Veth), [pinned PD80 repository](https://github.com/prod80/prod80-ReShade-Repository/tree/1c2ed5b093b03c558bfa6aea45c2087052e99554), MIT. Original notices and helper attributions retained. Only an unused `ReShadeUI.fxh` include was removed from both effects. The Color Temperature credit also identifies Renaud BÃ©dard, [original shader](https://www.shadertoy.com/view/lsSXW1), under **CC BY 3.0**, and Tanner Helland's temperature conversion algorithm. Noise assets are unchanged members of the MIT-licensed PD80 repository. |
+| ReShade.fxh common shader header | Patrick Mours, [pinned header](https://github.com/crosire/reshade-shaders/blob/6db142b4b1a05c764222e5b0bd9a644b7ccfe1dc/Shaders/ReShade.fxh), CC0-1.0. `ReShadeUI.fxh` is not included in this package. |
+| ReShade add-on API | Patrick Mours and contributors, [ReShade 6.8](https://github.com/crosire/reshade/tree/v6.8.0), BSD-3-Clause and the retained API notice. The runtime is supplied by each tester. |
+| ImGui | Omar Cornut and contributors, MIT. |
+| MinHook and HDE | Tsuda Kageyu and included HDE authors; all three original notice sections retained. |
+| FidelityFX FSR1 portions in Feeder | Advanced Micro Devices, MIT. |
+| Vulkan declarations used by Feeder | Khronos Group; original header notice and MIT/Apache-2.0 texts retained. |
+
+The stereo estimator is provided for noncommercial use under CC BY-NC 4.0.
+Keep attribution and modification notices when sharing it. No paid-mod, model,
+consumer or game files are part of this download.
+
+The preview loads the installed driver through the MIT bridge interface. No NVIDIA SDK implementation, driver or model binary is included. Runtime and model files supplied independently by a tester remain subject to their own terms.
+
+Snowymoon, `renodx-dlss5.addon64`, `nvngx_dlss.dll` and `nvngx_dlssnr.dll` must be
+obtained separately with permission to use them. This package provides no
+license to those files and does not bypass Snowymoon subscriber authentication.
+
+The implementation and its tests were developed with AI assistance and reviewed
+against retained earlier GPU checks and ETS2 captures. Candidate 21 still requires its final headset test. A successful automated check is not
+evidence of comfortable or artifact-free binocular viewing.

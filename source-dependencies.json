@@ -1,0 +1,243 @@
+{
+  "schema": 1,
+  "dependencies": [
+    {
+      "name": "ReShade API",
+      "repo": "crosire/reshade",
+      "pin": "18deaa52de0c425a78b329e9cb3c497281cd00ec",
+      "files": [
+        {
+          "path": "external/reshade/include/reshade.hpp",
+          "upstream": "include/reshade.hpp",
+          "sha256": "d86932721cb77e47b996da6bf3861b1a938a1bc843be04d1e0c5dd09133b7f43",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_api.hpp",
+          "upstream": "include/reshade_api.hpp",
+          "sha256": "db19051ef285a7a1a3721f2711de973be8805d4ca39a38fbadade7fd22100a17",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_api_device.hpp",
+          "upstream": "include/reshade_api_device.hpp",
+          "sha256": "8492cb9a4352ab9a25140828226a411be36c480c23d53d0fcc806a0515076212",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_api_format.hpp",
+          "upstream": "include/reshade_api_format.hpp",
+          "sha256": "d5fcdf598a9adbd18db6ccd0d15133d08c4dfa4909ec8335f76edaf735ae39cf",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_api_pipeline.hpp",
+          "upstream": "include/reshade_api_pipeline.hpp",
+          "sha256": "2c592013e46e72c62119c0652786ac21c6536a29a1bad30973a6069d1d7f7351",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_api_resource.hpp",
+          "upstream": "include/reshade_api_resource.hpp",
+          "sha256": "cae6d40cbd37e314e5ce5fc2cd22e77d7042892284212972bd986ffabb96363e",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_events.hpp",
+          "upstream": "include/reshade_events.hpp",
+          "sha256": "5b1f8b8144589712584cc8f2e8b6cf7c2aff05fc1c570b7867cfa1ee841296b7",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/reshade/include/reshade_overlay.hpp",
+          "upstream": "include/reshade_overlay.hpp",
+          "sha256": "771f0cdde2dacd21cfe04664e1aaaddae43114a1abb51bb63af5645a88c217a6",
+          "line_endings": "retained from Windows checkout"
+        }
+      ]
+    },
+    {
+      "name": "ImGui",
+      "repo": "ocornut/imgui",
+      "pin": "3912b3d9a9c1b3f17431aebafd86d2f40ee6e59c",
+      "files": [
+        {
+          "path": "external/imgui/imgui.h",
+          "upstream": "imgui.h",
+          "sha256": "2ca314d19c7e1ea85687a9c1e37079e0cc823939a551b3e6b2453ff0af9fbf13",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/imgui/imconfig.h",
+          "upstream": "imconfig.h",
+          "sha256": "fb8e32b9af9aa7dad5ec5c5bc862537f5624cb39a814e6d3b36b4629a50b6599",
+          "line_endings": "retained from Windows checkout"
+        }
+      ]
+    },
+    {
+      "name": "MinHook current match candidate",
+      "repo": "TsudaKageyu/minhook",
+      "pin": "d94c64d32ea37bc4f5ee47d580709f70c6fb6080",
+      "files": [
+        {
+          "path": "external/minhook/include/MinHook.h",
+          "upstream": "include/MinHook.h",
+          "sha256": "d5cf8db333895134398c7f69bac43f232835fda1cccbd86875c654cd69989b23",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/buffer.c",
+          "upstream": "src/buffer.c",
+          "sha256": "27d64b9e3c30ff8d894fb20a5b6353a4b77b40dbea75690ec00a79440a4d85d7",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/buffer.h",
+          "upstream": "src/buffer.h",
+          "sha256": "175ec5496c020509cf4c7670322b51b5bcd5b63a345bfefc4a19b43675857fa7",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/hook.c",
+          "upstream": "src/hook.c",
+          "sha256": "c6eec4f8dc5fb6513347c3f44fbdb25ca0bba7a2bcbe141d238c7da97094cd9d",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/trampoline.c",
+          "upstream": "src/trampoline.c",
+          "sha256": "58ae2dcc65317983535963654bb10a4398dae4a90da08af1007ab1dcf0db82a9",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/trampoline.h",
+          "upstream": "src/trampoline.h",
+          "sha256": "c93c66f8db04561f3345835f1185451f61043c1549e33425d87af86448580379",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/hde/hde64.c",
+          "upstream": "src/hde/hde64.c",
+          "sha256": "06b588a5140e15f0a55e13ddadc7e3a4648f3223cefab2d5285b796a422bb9f5",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/hde/hde64.h",
+          "upstream": "src/hde/hde64.h",
+          "sha256": "fd5b39e2865e12b9525ebda8fd9e9658b341ead5932d1bcb412a189f81ca42ca",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/hde/table64.h",
+          "upstream": "src/hde/table64.h",
+          "sha256": "0b6c69ad498e67907e0c574ab06123aee4ec30c99fa181099ea929a8d820bfc1",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/minhook/src/hde/pstdint.h",
+          "upstream": "src/hde/pstdint.h",
+          "sha256": "975488009779ea99c7e04b83a160397d5cd7195cb5bf6ad79180805f756c7d00",
+          "line_endings": "retained from Windows checkout"
+        }
+      ]
+    },
+    {
+      "name": "Vulkan-Headers",
+      "repo": "KhronosGroup/Vulkan-Headers",
+      "pin": "ee2ec5fd83dafce291024683b50dc89219333076",
+      "files": [
+        {
+          "path": "external/vulkan/vulkan/vulkan_core.h",
+          "upstream": "include/vulkan/vulkan_core.h",
+          "sha256": "131b7691cf01b153c2e4ac7c0dcb6ff8247e4647c17bc1012437cc28da613f16",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vulkan/vulkan_win32.h",
+          "upstream": "include/vulkan/vulkan_win32.h",
+          "sha256": "9dc4d69efa98e5d2b94458c60861b963ab5fe18b7af6be20ec7e6c020086c1d5",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vulkan/vk_platform.h",
+          "upstream": "include/vulkan/vk_platform.h",
+          "sha256": "1fc08c530b46e587295aafb19493eb9d434e963f7e48d3a323adbee06f59976c",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_av1std.h",
+          "upstream": "include/vk_video/vulkan_video_codec_av1std.h",
+          "sha256": "110d61f53214322f4d0aec8f77a7cec40c1517829b125c0d01d6fc9fdf0fdd83",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_av1std_decode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_av1std_decode.h",
+          "sha256": "fa2e85e9669f1666badfab9211de9dbe279bc2adc3ed095635313712ced9219d",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_av1std_encode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_av1std_encode.h",
+          "sha256": "5bb49198ac7a63c810115c62c9ab44b2e60f20c60869a68a813730f30777db5f",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_h264std.h",
+          "upstream": "include/vk_video/vulkan_video_codec_h264std.h",
+          "sha256": "84d669c6010443e268f940e57a26e3ff0c4050c9c434b79efaaa1bfa3d3d203c",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_h264std_decode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_h264std_decode.h",
+          "sha256": "fbee59666126c323b2bacc0b4b2c6fd1d1a28ced72e4c6791026a730f05bc129",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_h264std_encode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_h264std_encode.h",
+          "sha256": "cd7e050bc0062d791a5e4e3cc97efdd4b9b3838214168785743fb48ebd5a041a",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_h265std.h",
+          "upstream": "include/vk_video/vulkan_video_codec_h265std.h",
+          "sha256": "d3ae5c05dca0765d950e53aa1aafc9526be8be6be72b373803c70c94086665a1",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_h265std_decode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_h265std_decode.h",
+          "sha256": "4ce92dc8ff11f8f9652b01713992f1235b6c88694a658b8fe8777ac7c79fb5df",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_h265std_encode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_h265std_encode.h",
+          "sha256": "182114ca162aae8b3c1ed3c9693852126b2dda009712e387a1ab6f475ab8058e",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_vp9std.h",
+          "upstream": "include/vk_video/vulkan_video_codec_vp9std.h",
+          "sha256": "b4a35526ddf93652c6244e26a71f6d2d9536c0bd5aebde35ed777d1cd8a64978",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codec_vp9std_decode.h",
+          "upstream": "include/vk_video/vulkan_video_codec_vp9std_decode.h",
+          "sha256": "ac1ac9e1494a26855e327001fa6ffa26020eb5bf852dab1ea3e89939ced3d5ee",
+          "line_endings": "retained from Windows checkout"
+        },
+        {
+          "path": "external/vulkan/vk_video/vulkan_video_codecs_common.h",
+          "upstream": "include/vk_video/vulkan_video_codecs_common.h",
+          "sha256": "cf775e4d74384e3d4ed5657fb7d87faa4a7eaf6fee21f4f4113640565494a924",
+          "line_endings": "retained from Windows checkout"
+        }
+      ]
+    }
+  ]
+}

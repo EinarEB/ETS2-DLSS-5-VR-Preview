@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "neural_archive": {
+    "filename": "DLSS310.8.0-Streamline2.13.zip",
+    "bytes": 187288978,
+    "url": "https://cdn.discordapp.com/attachments/1545049227321810974/1545050050609025114/DLSS310.8.0-Streamline2.13.zip?ex=6a9eaffd&is=6a9d5e7d&hm=9497e1aa86dccdbc5116dbffad5000dc699a89f9c71636797082f8678617d31d&",
+    "expires_utc": "2026-09-07T12:37:17Z",
+    "source": "The project owner supplied this existing Discord attachment for the public setup guide. Its channel, attachment ID and filename match the original local download record.",
+    "fallback": "https://discord.com/invite/renodx",
+    "fallback_instructions": "Find DLSS310.8.0-Streamline2.13.zip in the dlss5-downloads channel and obtain a refreshed link from that post."
+  }
+}

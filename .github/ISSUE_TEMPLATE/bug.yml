@@ -1,0 +1,28 @@
+name: Preview problem
+description: Report an installation, rendering or controls problem
+title: "[Preview] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include the steps and the exact menu or error message. Say whether it affects the headset, monitor or both.
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: GPU, driver, headset and OpenXR runtime
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Preview version, ETS2 version and quality preset
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Diagnostics or optional images
+      description: Use Save diagnostics in the launcher. Review it before sharing. Do not upload model DLLs, paid-mod files, subscriber keys, account files or saves. Images and full logs are optional.

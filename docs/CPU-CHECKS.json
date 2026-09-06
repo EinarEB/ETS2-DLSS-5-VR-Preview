@@ -1,0 +1,780 @@
+{
+  "candidate": "0.1-candidate21",
+  "recorded_utc": "2026-09-06T18:25:23.499345+00:00",
+  "headset_validated": false,
+  "game_launched": false,
+  "gpu_used": false,
+  "counts": {
+    "blend": 28,
+    "installer_including_official_reshade_data_extraction": 42,
+    "launcher": 173,
+    "total": 243
+  },
+  "installer_checks": [
+    "all six toy components validated",
+    "child containment",
+    "sibling prefix rejected",
+    "parent traversal rejected",
+    "alternate data stream rejected",
+    "section patch preserves unrelated keys",
+    "section patch preserves other sections",
+    "missing section appended",
+    "atomic replacement",
+    "locked config not overwritten",
+    "locked config preserved",
+    "validation writes nothing",
+    "existing game destination rejected",
+    "destination inside game rejected",
+    "destination inside Documents rejected",
+    "destination inside package rejected",
+    "wrong executable layout rejected",
+    "insufficient disk space rejected",
+    "non-NTFS rejected",
+    "missing VC runtime rejected",
+    "wrong model version rejected",
+    "x86 file rejected",
+    "wrong Snowymoon build rejected",
+    "ReShade appended ZIP extraction without executing EXE",
+    "pre-cancelled validation writes nothing",
+    "mid-install injected failure",
+    "failed transaction removes only created files",
+    "failure preserves original config",
+    "mid-install cancellation",
+    "cancelled transaction rolls back",
+    "failed cleanup retains incomplete marker",
+    "owned cleanup can finish after lock is released",
+    "untracked file preserved with incomplete marker",
+    "successful install commits manifest and clears marker",
+    "game archive shared",
+    "correct ReShade loader placed",
+    "successful install preserves original config",
+    "preview baseline preserves display mode and other settings",
+    "no campaign or personal profile imported",
+    "VR preset and root resolved independently",
+    "repeat install never overwrites existing preview",
+    "official ReShade6.8 installer extracts exact tested runtime without execution"
+  ],
+  "launcher_checks": [
+    {
+      "name": "constructor never shows a window",
+      "passed": true
+    },
+    {
+      "name": "initial load preserves all three config files byte-for-byte",
+      "passed": true
+    },
+    {
+      "name": "initial load does not touch config modification times",
+      "passed": true
+    },
+    {
+      "name": "initial load creates or changes no save backup, including a repeated fixture run",
+      "passed": true
+    },
+    {
+      "name": "initial non-preset quality displays Custom",
+      "passed": true
+    },
+    {
+      "name": "initial VR look reads the VR preset independently of desktop",
+      "passed": true
+    },
+    {
+      "name": "initial style and intensity read the desktop RenoDX.DLSS5 section, with distinct VR values preserved",
+      "passed": true
+    },
+    {
+      "name": "initial model selection reads desktop NRPreset 3 while preserving distinct VR preset 1",
+      "passed": true
+    },
+    {
+      "name": "Low reads exact tuple",
+      "passed": true
+    },
+    {
+      "name": "Low selector index correct",
+      "passed": true
+    },
+    {
+      "name": "Low description reports actual tuple",
+      "passed": true
+    },
+    {
+      "name": "Medium reads exact tuple",
+      "passed": true
+    },
+    {
+      "name": "Medium selector index correct",
+      "passed": true
+    },
+    {
+      "name": "Medium description reports actual tuple",
+      "passed": true
+    },
+    {
+      "name": "High reads exact tuple",
+      "passed": true
+    },
+    {
+      "name": "High selector index correct",
+      "passed": true
+    },
+    {
+      "name": "High description reports actual tuple",
+      "passed": true
+    },
+    {
+      "name": "Ultra reads exact tuple",
+      "passed": true
+    },
+    {
+      "name": "Ultra selector index correct",
+      "passed": true
+    },
+    {
+      "name": "Ultra description reports actual tuple",
+      "passed": true
+    },
+    {
+      "name": "custom tuple retained",
+      "passed": true
+    },
+    {
+      "name": "custom tuple is not coerced to a preset",
+      "passed": true
+    },
+    {
+      "name": "missing required quality key fails explicitly instead of using former Ultra default",
+      "passed": true
+    },
+    {
+      "name": "malformed quality fails explicitly instead of defaulting",
+      "passed": true
+    },
+    {
+      "name": "case-insensitive last duplicate quality value is read",
+      "passed": true
+    },
+    {
+      "name": "Low save writes exact tuple",
+      "passed": true
+    },
+    {
+      "name": "Low preserves unrelated nonblank lines and comments including their order/spacing, model, intensity, mix and structure",
+      "passed": true
+    },
+    {
+      "name": "Low changes only seven quality keys and removes their duplicates",
+      "passed": true
+    },
+    {
+      "name": "Low has exactly the seven intended semantic changes and no added unrelated setting",
+      "passed": true
+    },
+    {
+      "name": "Low backup has exact original bytes",
+      "passed": true
+    },
+    {
+      "name": "Low leaves both actual model/intensity INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "Medium save writes exact tuple",
+      "passed": true
+    },
+    {
+      "name": "Medium preserves unrelated nonblank lines and comments including their order/spacing, model, intensity, mix and structure",
+      "passed": true
+    },
+    {
+      "name": "Medium changes only seven quality keys and removes their duplicates",
+      "passed": true
+    },
+    {
+      "name": "Medium has exactly the seven intended semantic changes and no added unrelated setting",
+      "passed": true
+    },
+    {
+      "name": "Medium backup has exact original bytes",
+      "passed": true
+    },
+    {
+      "name": "Medium leaves both actual model/intensity INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "High save writes exact tuple",
+      "passed": true
+    },
+    {
+      "name": "High preserves unrelated nonblank lines and comments including their order/spacing, model, intensity, mix and structure",
+      "passed": true
+    },
+    {
+      "name": "High changes only seven quality keys and removes their duplicates",
+      "passed": true
+    },
+    {
+      "name": "High has exactly the seven intended semantic changes and no added unrelated setting",
+      "passed": true
+    },
+    {
+      "name": "High backup has exact original bytes",
+      "passed": true
+    },
+    {
+      "name": "High leaves both actual model/intensity INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "Ultra save writes exact tuple",
+      "passed": true
+    },
+    {
+      "name": "Ultra preserves unrelated nonblank lines and comments including their order/spacing, model, intensity, mix and structure",
+      "passed": true
+    },
+    {
+      "name": "Ultra changes only seven quality keys and removes their duplicates",
+      "passed": true
+    },
+    {
+      "name": "Ultra has exactly the seven intended semantic changes and no added unrelated setting",
+      "passed": true
+    },
+    {
+      "name": "Ultra backup has exact original bytes",
+      "passed": true
+    },
+    {
+      "name": "Ultra leaves both actual model/intensity INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "Custom selection performs no write",
+      "passed": true
+    },
+    {
+      "name": "loadingOptions blocks a quality save",
+      "passed": true
+    },
+    {
+      "name": "starting blocks a quality save",
+      "passed": true
+    },
+    {
+      "name": "settling blocks a quality save",
+      "passed": true
+    },
+    {
+      "name": "active session blocks quality save",
+      "passed": true
+    },
+    {
+      "name": "locked quality file error remains inside event handler",
+      "passed": true
+    },
+    {
+      "name": "locked quality save retains original bytes",
+      "passed": true
+    },
+    {
+      "name": "locked quality save reports its failure",
+      "passed": true
+    },
+    {
+      "name": "quality failure leaves no transaction temporary file",
+      "passed": true
+    },
+    {
+      "name": "quality replacement failure after successful read and backup retains all originals",
+      "passed": true
+    },
+    {
+      "name": "quality replacement failure still leaves an exact recovery backup",
+      "passed": true
+    },
+    {
+      "name": "quality replacement failure reports status and cleans temporary file",
+      "passed": true
+    },
+    {
+      "name": "running quality label retains launch snapshot and distinguishes saved High",
+      "passed": true
+    },
+    {
+      "name": "quality refresh never rewrites active pass snapshot",
+      "passed": true
+    },
+    {
+      "name": "actual quality selector event saves Medium without explicit handler call",
+      "passed": true
+    },
+    {
+      "name": "quality selector does not invoke appearance transaction",
+      "passed": true
+    },
+    {
+      "name": "model selector exposes exact ordered labels for Classic NRPreset 0 through 3",
+      "passed": true
+    },
+    {
+      "name": "model missing uses the launcher's tested fallback 1",
+      "passed": true
+    },
+    {
+      "name": "model missing refresh leaves every config and backup unchanged",
+      "passed": true
+    },
+    {
+      "name": "model bad uses the launcher's tested fallback 1",
+      "passed": true
+    },
+    {
+      "name": "model bad refresh leaves every config and backup unchanged",
+      "passed": true
+    },
+    {
+      "name": "model -1 uses the launcher's tested fallback 1",
+      "passed": true
+    },
+    {
+      "name": "model -1 refresh leaves every config and backup unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 4 uses the launcher's tested fallback 1",
+      "passed": true
+    },
+    {
+      "name": "model 4 refresh leaves every config and backup unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 0 event changes only desktop RenoDX NRPreset, preserving style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 0 event changes only VR RenoDX NRPreset, preserving divergent style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 0 event keeps all quality, blend and feeder config bytes unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 0 refresh keeps all other displayed selections unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 0 event makes one exact pre-edit backup set",
+      "passed": true
+    },
+    {
+      "name": "model 1 event changes only desktop RenoDX NRPreset, preserving style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 1 event changes only VR RenoDX NRPreset, preserving divergent style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 1 event keeps all quality, blend and feeder config bytes unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 1 refresh keeps all other displayed selections unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 1 event makes one exact pre-edit backup set",
+      "passed": true
+    },
+    {
+      "name": "model 2 event changes only desktop RenoDX NRPreset, preserving style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 2 event changes only VR RenoDX NRPreset, preserving divergent style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 2 event keeps all quality, blend and feeder config bytes unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 2 refresh keeps all other displayed selections unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 2 event makes one exact pre-edit backup set",
+      "passed": true
+    },
+    {
+      "name": "model 3 event changes only desktop RenoDX NRPreset, preserving style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 3 event changes only VR RenoDX NRPreset, preserving divergent style, intensity, look and unrelated section keys",
+      "passed": true
+    },
+    {
+      "name": "model 3 event keeps all quality, blend and feeder config bytes unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 3 refresh keeps all other displayed selections unchanged",
+      "passed": true
+    },
+    {
+      "name": "model 3 event makes one exact pre-edit backup set",
+      "passed": true
+    },
+    {
+      "name": "unset model selection cannot erase NRPreset or trigger an appearance transaction",
+      "passed": true
+    },
+    {
+      "name": "starting control gate disables model together with every other option",
+      "passed": true
+    },
+    {
+      "name": "starting model event cannot write configs or create backups even if raised programmatically",
+      "passed": true
+    },
+    {
+      "name": "starting model event restores the saved selection and reports the busy state",
+      "passed": true
+    },
+    {
+      "name": "settling control gate disables model together with every other option",
+      "passed": true
+    },
+    {
+      "name": "settling model event cannot write configs or create backups even if raised programmatically",
+      "passed": true
+    },
+    {
+      "name": "settling model event restores the saved selection and reports the busy state",
+      "passed": true
+    },
+    {
+      "name": "active control gate disables model together with every other option",
+      "passed": true
+    },
+    {
+      "name": "active model event cannot write configs or create backups even if raised programmatically",
+      "passed": true
+    },
+    {
+      "name": "active model event restores the saved selection and reports the busy state",
+      "passed": true
+    },
+    {
+      "name": "loading model selection suppresses all save side effects",
+      "passed": true
+    },
+    {
+      "name": "idle control gate re-enables model and all other options",
+      "passed": true
+    },
+    {
+      "name": "locked second INI rolls back the first INI after a model edit without changing any original bytes",
+      "passed": true
+    },
+    {
+      "name": "failed model edit retains one exact recovery backup set",
+      "passed": true
+    },
+    {
+      "name": "failed model edit restores its displayed saved value and reports the error",
+      "passed": true
+    },
+    {
+      "name": "color look Clean changes only VR PresetPath",
+      "passed": true
+    },
+    {
+      "name": "color look Clean never changes desktop preset or other files",
+      "passed": true
+    },
+    {
+      "name": "color look Cooler changes only VR PresetPath",
+      "passed": true
+    },
+    {
+      "name": "color look Cooler never changes desktop preset or other files",
+      "passed": true
+    },
+    {
+      "name": "color look ColdGrade changes only VR PresetPath",
+      "passed": true
+    },
+    {
+      "name": "color look ColdGrade never changes desktop preset or other files",
+      "passed": true
+    },
+    {
+      "name": "Current custom look makes no edit or backup",
+      "passed": true
+    },
+    {
+      "name": "missing requested VR preset changes no file",
+      "passed": true
+    },
+    {
+      "name": "missing VR preset reports explicit failure",
+      "passed": true
+    },
+    {
+      "name": "style edit changes only desktop NRStyle, retaining desktop preset and model/intensity",
+      "passed": true
+    },
+    {
+      "name": "style edit changes only VR NRStyle, retaining divergent intensity/model and VR preset",
+      "passed": true
+    },
+    {
+      "name": "style edit leaves quality/config bytes untouched",
+      "passed": true
+    },
+    {
+      "name": "intensity edit changes only desktop NRIntensity",
+      "passed": true
+    },
+    {
+      "name": "intensity edit changes only VR NRIntensity, preserving divergent styles/model",
+      "passed": true
+    },
+    {
+      "name": "intensity edit leaves quality/config bytes untouched",
+      "passed": true
+    },
+    {
+      "name": "compare key choice 0 changes only preview_toggle_key",
+      "passed": true
+    },
+    {
+      "name": "compare key choice 0 leaves both appearance INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "compare key choice 1 changes only preview_toggle_key",
+      "passed": true
+    },
+    {
+      "name": "compare key choice 1 leaves both appearance INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "compare key choice 2 changes only preview_toggle_key",
+      "passed": true
+    },
+    {
+      "name": "compare key choice 2 leaves both appearance INIs byte-identical",
+      "passed": true
+    },
+    {
+      "name": "unrecognized appearance sender changes nothing",
+      "passed": true
+    },
+    {
+      "name": "one style operation makes exactly one backup set",
+      "passed": true
+    },
+    {
+      "name": "appearance backup retains all exact pre-edit config bytes",
+      "passed": true
+    },
+    {
+      "name": "actual look selector event changes only the VR look",
+      "passed": true
+    },
+    {
+      "name": "actual intensity event writes only intensity in both INIs",
+      "passed": true
+    },
+    {
+      "name": "loadingOptions blocks an appearance save",
+      "passed": true
+    },
+    {
+      "name": "starting blocks an appearance save",
+      "passed": true
+    },
+    {
+      "name": "settling blocks an appearance save",
+      "passed": true
+    },
+    {
+      "name": "active session blocks appearance save",
+      "passed": true
+    },
+    {
+      "name": "second-file replacement failure stays within appearance handler",
+      "passed": true
+    },
+    {
+      "name": "second-file replacement failure rolls back the already-written desktop INI exactly",
+      "passed": true
+    },
+    {
+      "name": "partial appearance failure preserves one exact recovery backup set",
+      "passed": true
+    },
+    {
+      "name": "partial appearance failure backup has exact original bytes for all files",
+      "passed": true
+    },
+    {
+      "name": "partial appearance failure reports failure",
+      "passed": true
+    },
+    {
+      "name": "partial appearance failure cleans all replacement temporary files",
+      "passed": true
+    },
+    {
+      "name": "locked config toggle edit retains all originals",
+      "passed": true
+    },
+    {
+      "name": "locked toggle config reports failure",
+      "passed": true
+    },
+    {
+      "name": "unreadable config prevents appearance writes before transaction begins",
+      "passed": true
+    },
+    {
+      "name": "missing observer rejects readiness",
+      "passed": true
+    },
+    {
+      "name": "malformed observer rejects readiness",
+      "passed": true
+    },
+    {
+      "name": "active two-pass snapshot accepts four successful same-frame slots",
+      "passed": true
+    },
+    {
+      "name": "saved one-pass config cannot weaken active two-pass readiness",
+      "passed": true
+    },
+    {
+      "name": "active two-pass remains ready despite saved one-pass change",
+      "passed": true
+    },
+    {
+      "name": "active one-pass accepts eye pair despite saved two-pass config",
+      "passed": true
+    },
+    {
+      "name": "missing saved config does not alter active one-pass readiness",
+      "passed": true
+    },
+    {
+      "name": "malformed saved config does not alter active one-pass readiness",
+      "passed": true
+    },
+    {
+      "name": "missing saved config does not alter active two-pass readiness",
+      "passed": true
+    },
+    {
+      "name": "observer older than 15 seconds rejected",
+      "passed": true
+    },
+    {
+      "name": "observer written before launch rejected",
+      "passed": true
+    },
+    {
+      "name": "different eye frame IDs rejected",
+      "passed": true
+    },
+    {
+      "name": "different pass frame IDs rejected",
+      "passed": true
+    },
+    {
+      "name": "failed last eye pass rejected",
+      "passed": true
+    },
+    {
+      "name": "zero frame IDs rejected",
+      "passed": true
+    },
+    {
+      "name": "duplicate one-eye slots cannot fake stereo readiness",
+      "passed": true
+    },
+    {
+      "name": "uninitialized active pass count rejected",
+      "passed": true
+    },
+    {
+      "name": "unsupported active pass count rejected",
+      "passed": true
+    },
+    {
+      "name": "one-pass readiness ignores unneeded failed second-pass slots",
+      "passed": true
+    },
+    {
+      "name": "complete tiny four-frame ten-plane SBS capture accepted",
+      "passed": true
+    },
+    {
+      "name": "truncated last-frame result rejected",
+      "passed": true
+    },
+    {
+      "name": "incomplete capture rejected",
+      "passed": true
+    },
+    {
+      "name": "missing fourth frame metadata rejected",
+      "passed": true
+    },
+    {
+      "name": "original-config and settings-manifest sentinels unchanged across entire suite",
+      "passed": true
+    },
+    {
+      "name": "no actual or fixture game executable was supplied",
+      "passed": true
+    }
+  ],
+  "test_source_sha256": {
+    "src/feeder/feed_preview_blend.h": "45e71006b21148384775483653387ba157e85fdb6670d75e5bd1f31304ac14d0",
+    "src/launcher/AssemblyInfo.cs": "3d2a216278399b2b070fb17ceab5844d0b6475a7627b9a940f1ceb320ad27301",
+    "src/launcher/DesktopShortcut.cs": "469d1a8fe7990b432b37a37aef26c8fe836d119ba5b5c9657297508aa90c6bae",
+    "src/launcher/LauncherOptions.cs": "ef016949dbffcf5076e50e3d104c10f77ecf27397ad86ad43c52b49d983b41fd",
+    "src/launcher/PreviewFiles.cs": "0d95e0030d20ec2f9c208f7f807ec0f24279d962e7d3483af123a485b9f72c8b",
+    "src/launcher/PreviewForm.cs": "7f4d8ca69568df7c2c63fec668b056e6a3e79717e19c1caef2beb24b6a3207fb",
+    "src/launcher/PreviewLauncher.cs": "93db01eaf0d74020afba4acecdc55c812f464887c0bde57f55b888e390084c40",
+    "src/launcher/PreviewSetup.cs": "6f20f58c45bc2a441649ec35b3ed70e216bb21f49df06519f29a7bef653f82b2",
+    "src/launcher/SetupEngine.cs": "fc1b2167f8876ee23327c0987029e2e4ed6293ed59678970ef2857360b904f57",
+    "tests/preview_blend_test.cpp": "c9d3d4e67a21771e391b5f1f22cdbb72e88d8197dcf321bcfeab61ff2351eed4",
+    "tests/ReleaseLauncherTests.cs": "1153826f2fc3702590f7c4e60ccb817fc477c20d7e03974c4e28220f8f2bd22c",
+    "tests/SetupTests.cs": "1239e778f9cf8593cf153accca1acc3b4519060deaabcee95885417dd839971b"
+  },
+  "test_program_sha256": {
+    "build/tests/blend/preview_blend_test.exe": "53539b2f95c4bfab161b58b90b42491418e7153b69cf9f39be51c874a4f0a2b4",
+    "build/tests/setup/SetupTests.exe": "6bc09de28d3848aa8d11335db8bb6195ae51ebd6872b0da21b0fc2d88baa83e8",
+    "build/tests/launcher/ReleaseLauncherTests.exe": "19032723c029393ff0dce847d12e75e39ca835946192f0dcb41dd3ed4f2f81eb"
+  },
+  "raw_report_sha256": {
+    "blend": "d05ed5ce94d843fa0df74bbe28fcd23a5790aa66455220f6b6378d6ee1b1eba9",
+    "installer": "e1f4e8e4933039d2d97ff6a05cbdc03d10dab102d60fc401fd754078de5f4a81",
+    "launcher": "c5a38e99a1a2e4bb9cb2d9175de09deaac71469494ba41f72190d4a2bed31684"
+  },
+  "limits": [
+    "The installer uses synthetic files, plus data-only extraction of the official ReShade setup archive.",
+    "Launcher tests exercise settings and status against fixtures; they do not call its game-launch entry point.",
+    "Compilation and lifetime review do not exercise the neural driver, real presentation, headset image quality, or process exit with a live GPU session."
+  ]
+}

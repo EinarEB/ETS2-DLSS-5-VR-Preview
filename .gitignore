@@ -1,0 +1,19 @@
+/build/
+/dist/
+/Required files/
+*.obj
+*.pdb
+*.lib
+*.exp
+*.res
+*.addon64
+*.dll
+*.exe
+*.raw
+*.dmp
+*.zip
+preview.json
+preview-status.json
+setup-error.txt
+launcher-error.txt
+__pycache__/

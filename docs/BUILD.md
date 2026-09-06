@@ -1,0 +1,25 @@
+# Build the Windows x64 preview
+
+Install Visual Studio 2022 Build Tools with **Desktop development with C++** and a Windows SDK supporting D3D11/D3D12. The GUI uses the Windows .NET Framework C# compiler and has no NuGet dependencies. Python 3.10+ is needed only for packaging and auditing.
+
+Run `build.cmd` from an **x64 Native Tools Command Prompt for VS 2022**. It builds the three add-ons, setup, launcher and CPU/file tests. It does not run ETS2, load NGX, compile game shaders on a GPU or start a graphical benchmark. `test.cmd` repeats those CPU/file tests after a build.
+
+The source includes only the small, pinned, permissively licensed build dependencies needed by these translation units. `source-dependencies.json` records their original repositories, commit IDs and exact local file hashes. Source notices are retained in `licenses`. No NVIDIA SDK headers or static library are required. The dormant upstream Vulkan/OpenGL transport code remains in the Feeder translation unit, but this preview rejects those APIs and all desktop effect runtimes.
+
+The candidate was built with MSVC toolset **14.44.35207** and Windows SDK **10.0.26100.0**. Compiler version, timestamps and build paths can change binary hashes; this is a repeatable source build process, not a claim of bit-identical output across toolchains. The release manifest records the toolchain and the actual source and binary hashes used for a candidate.
+
+Run `python tools/package.py` after building and reviewing the docs. It stages an explicit payload, verifies required source dependencies, writes hashes and creates the candidate ZIP in `dist`. It never searches a game installation or copies user downloads. A package is still a candidate until its physical test is recorded; the script does not publish to GitHub.
+
+## Tests and their limits
+
+- `preview_blend_test.cpp` exercises focus/release/press behavior, runtime generations, manual overrides and delivery acknowledgement without ReShade.
+- `SetupTests.cs` uses deliberately non-executable PE headers and tiny archives. It tests input validation, path containment, read locks, rollback/cancellation and settings preservation. An optional second argument can supply the official ReShade EXE for data-only archive extraction.
+- `ReleaseLauncherTests.cs` drives controls and private methods against local fixtures. It never calls the production launcher entry point, game launch, shell/shortcut or physical runtime verification paths.
+
+The setup fixture retains its tiny files and a report under `%TEMP%\ets2-preview-tests` for inspection. The launcher fixture lives under `build\tests\launcher`. Tests must not be run from an installed game preview directory. See `VALIDATION.md` for what still requires a headset and the real Windows presentation chain.
+
+## Source boundaries
+
+The integration source is derived from Feeder 0.13.1-beta.1 and the MIT bridge. The current changes separate stereo resources, enforce matched depth, support region selection and multiple passes, preserve native detail, stabilize the neural edit, add frame-consistent comparison/status, and prepare a local installation. Shader adaptation provenance and licenses are listed in `THIRD-PARTY-NOTICES.md`.
+
+Do not put game files, Snowymoon binaries/credentials, RenoDX consumer binaries, NVIDIA model DLLs, private configurations, captures or test profiles in this repository. `package.py` uses explicit source and payload lists, but a maintainer must still review the resulting archive before publishing.

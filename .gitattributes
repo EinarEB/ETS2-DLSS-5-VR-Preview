@@ -1,0 +1,5 @@
+# Keep the exact source bytes recorded in the candidate's SHA-256 manifest.
+# This Windows-only build accepts the retained LF/CRLF files as supplied.
+* -text
+*.png binary
+*.ico binary
