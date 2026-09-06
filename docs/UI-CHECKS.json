@@ -1,0 +1,29 @@
+{
+  "recorded_utc": "2026-09-06T22:17:01.358678+00:00",
+  "scope": "Installer/launcher UI polish, source packaging and static gallery. Rendering source unchanged.",
+  "setup_checks": 41,
+  "launcher_checks": 176,
+  "failures": 0,
+  "game_launched": false,
+  "installed_launcher_verification_exit": 0,
+  "gallery": {
+    "scenes": 2,
+    "qualities": 4,
+    "neural_styles": 3,
+    "color_looks": 3,
+    "processed_images": 72,
+    "native_eye": [
+      2504,
+      2600
+    ],
+    "encoding": "lossless WebP",
+    "method": "Static replay of real captured inputs, zero motion; actual neural rendering and release color shaders."
+  },
+  "browser_review": [
+    "Desktop and 390-pixel phone viewport",
+    "Original/result slider endpoints",
+    "Native dimensions in larger view",
+    "Quality selector and local asset references"
+  ],
+  "headset_motion_validation": false
+}

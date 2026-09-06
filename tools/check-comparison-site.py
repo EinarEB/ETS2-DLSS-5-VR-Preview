@@ -3,7 +3,7 @@ from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit,unquote
 import hashlib,json,sys
-root=Path(__file__).resolve().parents[1]/(sys.argv[1] if len(sys.argv)>1 else 'site')
+root=Path(__file__).resolve().parents[1]/(sys.argv[1] if len(sys.argv)>1 else 'docs')
 class Links(HTMLParser):
     def __init__(self):super().__init__();self.targets=[]
     def handle_starttag(self,tag,attrs):
@@ -27,10 +27,14 @@ comparisons=json.loads((root/'assets/comparisons.json').read_text(encoding='utf-
 assert set(comparisons['scenes'])=={'cab','exterior'}
 for scene in comparisons['scenes'].values():
     assert (scene['width'],scene['height'])==(2504,2600)
-    assert set(scene['presets'])=={'low','medium','high','ultra'}
-    names=[scene['original'],scene.get('original_full',scene['original'])]
-    for preset in scene['presets'].values():
-        if preset:names.extend([preset['image'],preset.get('image_full',preset['image'])])
+    expected={f'{q}-{s}-{l}' for q in ('low','medium','high','ultra') for s in ('natural','default','cinematic') for l in ('clean','cooler','cold')}
+    assert set(scene['samples'])==expected
+    names=list(scene['original'].values())
+    for sample in scene['samples'].values():names.extend(sample.values())
     for name in names:
         assert name.startswith('assets/') and (root/name).is_file(),name
-print('Verified two scenes, four lossless full-resolution images, preset references and local page links. No external image host is required.')
+assert len(provenance['images'])==148 and len(provenance['runs'])==24
+assert len({i['file'] for i in provenance['images']})==148
+assert all(r['verified'] for r in provenance['runs'])
+assert not any(x in json.dumps(provenance) for x in ('C:\\\\','E:\\\\','Bruker','chatgpt.site'))
+print('Verified 72 results, two originals, 74 smaller previews, all hashes and local page links.')

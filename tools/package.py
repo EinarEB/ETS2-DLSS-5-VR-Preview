@@ -31,11 +31,11 @@ SHADERS = [
     'PD80_00_Color_Spaces.fxh','PD80_00_Noise_Samplers.fxh','PD80_00_Blend_Modes.fxh',
     'PD80_00_Base_Effects.fxh','pd80_bluenoise.png','pd80_bluenoise_rgba.png','pd80_gaussnoise.png',
 ]
-SOURCE_DIRS = {'src','tests','templates','shaders','external','licenses','tools','assets','docs','.github'}
+SOURCE_DIRS = {'src','tests','templates','shaders','external','licenses','tools','assets','docs','site','.github'}
 SOURCE_ROOT_FILES = {'README.md','LICENSE','THIRD-PARTY-NOTICES.md','CHANGELOG.md',
                      'Read me first.html','build.cmd','test.cmd','source-dependencies.json','.gitignore','.gitattributes'}
 ALLOWED_EXTENSIONS = {'.cpp','.h','.hpp','.c','.rc','.cs','.fx','.fxh','.ini','.cfg','.json','.txt','.md',
-                      '.png','.svg','.ico','.manifest','.py','.cmd','.html','.yml','.yaml',''}
+                      '.png','.svg','.ico','.manifest','.py','.cmd','.html','.css','.js','.yml','.yaml',''}
 
 def sha(path):
     h=hashlib.sha256()
@@ -59,6 +59,9 @@ def source_files():
         relative=file.relative_to(ROOT)
         if relative.parts[0] not in SOURCE_DIRS and relative.as_posix() not in SOURCE_ROOT_FILES:continue
         if file.is_dir():continue
+        # The native comparison photos belong to the website. Keep hundreds of
+        # megabytes of gallery images out of the installer and source bundle.
+        if relative.parts[:2] == ('docs','assets') and file.suffix.lower()=='.webp':continue
         require(file)
         if file.suffix.lower() not in ALLOWED_EXTENSIONS:raise ValueError('Unapproved source extension: '+str(relative))
         if file.name in DEPENDENCIES or file.name=='preview.json':raise ValueError('Private/runtime input in source: '+file.name)
@@ -106,7 +109,9 @@ def main():
     for name in TEMPLATES:copy(ROOT/'templates'/name,payload/name)
     for name in SHADERS:copy(ROOT/'shaders'/name,payload/'fx'/name)
     documentation=[ROOT/name for name in ['Read me first.html','README.md','THIRD-PARTY-NOTICES.md','CHANGELOG.md']]
-    documentation += [p for p in source if p.relative_to(ROOT).parts[0] in {'licenses','docs'}]
+    documentation += [p for p in source if p.relative_to(ROOT).parts[0]=='licenses' or
+                      (p.relative_to(ROOT).parts[0]=='docs' and p.relative_to(ROOT).parts[1]!='assets' and
+                       p.suffix.lower() in {'.md','.json','.png','.svg'} and p.relative_to(ROOT).as_posix()!='docs/README.md')]
     for file in documentation:
         copy(file,stage/file.relative_to(ROOT));copy(file,payload/file.relative_to(ROOT))
     required=stage/'Required files';required.mkdir()

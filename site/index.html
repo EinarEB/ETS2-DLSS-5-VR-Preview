@@ -1,31 +1,18 @@
 <!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="ETS2 VR neural-rendering preview. Explore real cab and truck captures with an original / neural comparison slider."><meta name="theme-color" content="#111714">
-<title>ETS2 DLSS 5 VR Preview — comparisons</title><link rel="stylesheet" href="style.css"><script src="app.js" defer></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Compare ETS2 DLSS 5 VR quality presets, neural styles and color looks on the same real cab and exterior frames."><meta name="theme-color" content="#111714">
+<title>Comparisons · ETS2 DLSS 5 VR Preview</title><link rel="stylesheet" href="style.css?v=2"><script src="app.js?v=2" defer></script>
 </head><body>
-<header class="topbar"><a class="brand" href="./"><span class="mark" aria-hidden="true">↗</span> ETS2 VR Preview</a><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview">GitHub repository ↗</a></header>
+<header class="topbar"><a class="brand" href="./">ETS2 <span>DLSS 5 VR Preview</span></a><nav aria-label="Main"><a href="setup.html">Setup guide</a><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview">GitHub ↗</a></nav></header>
 <main>
-<div class="intro"><p class="eyebrow">DLSS 5 · COMMUNITY PREVIEW · v0.1</p><h1>A different light on the road.</h1><p class="lede">Neural rendering for Euro Truck Simulator 2 in VR.<br>Compare the original scene with the neural edit, one eye at a time.</p></div>
-<section class="showcase" aria-label="Interactive image comparison">
-<div class="controls">
-<div><span class="control-label" id="scene-label">01 · Choose a scene</span><div class="segments" role="group" aria-labelledby="scene-label"><button data-scene="cab" aria-pressed="true">Inside the cab</button><button data-scene="exterior" aria-pressed="false">Outside the truck</button></div></div>
-<div><span class="control-label" id="preset-label">02 · Choose a quality preset</span><div class="segments presets" role="group" aria-labelledby="preset-label"><button data-preset="low" aria-pressed="false">Low</button><button data-preset="medium" aria-pressed="true">Medium</button><button data-preset="high" aria-pressed="false">High</button><button data-preset="ultra" aria-pressed="false">Ultra</button></div></div>
-</div>
-<div class="comparison-layout"><div class="viewer-column">
-<div class="viewer" id="viewer" aria-busy="true">
-<img id="after-image" alt="" width="2504" height="2600" draggable="false"><img id="before-image" alt="Captured original VR scene before the neural edit" width="2504" height="2600" draggable="false">
-<div class="image-labels"><span>Original</span><span id="after-label">Medium · neural edit</span></div><div class="divider" aria-hidden="true"><span>‹ ›</span></div>
-<input id="wipe" type="range" min="0" max="100" value="50" aria-label="Original image coverage" aria-valuetext="50 percent original, 50 percent neural edit">
-<div class="viewer-message" id="viewer-message" role="status">Loading the captured frame…</div></div>
-<div class="under-viewer"><p id="drag-hint">Drag to compare · use ← → on the slider</p><div><button class="text-button" id="show-original">Original only</button><span aria-hidden="true"> / </span><button class="text-button" id="show-neural">Neural only</button></div></div>
-<div class="image-links"><a id="original-link" target="_blank" rel="noopener">Open full-size original ↗</a><a id="result-link" target="_blank" rel="noopener">Open full-size result ↗</a></div>
-</div><aside>
-<p class="eyebrow" id="sample-kind">REAL VR CAPTURE</p><h2 id="preset-title">Medium</h2><p id="preset-description">The starting point for smoother frame delivery.</p>
-<dl class="specs"><div><dt>Passes per eye</dt><dd id="passes">1</dd></div><div><dt>Work resolution</dt><dd id="resolution">65%</dd></div><div><dt>Centered square</dt><dd id="crop">75%</dd></div></dl>
-<p class="small">The square is centered in each eye. Its percentage is measured against the shorter eye side; the surrounding image keeps the original rendering.</p>
-<div class="sample-note"><span class="status-dot" aria-hidden="true"></span><p id="sample-note" aria-live="polite">Loading capture details…</p></div><p class="small" id="capture-details"></p>
-<a class="button" href="setup.html">Read the setup guide <span aria-hidden="true">↗</span></a><p class="small release-note"><a href="https://github.com/EinarEB/ETS2-DLSS-5-VR-Preview/archive/refs/heads/main.zip">Download the source preview</a>. Installer coming soon.</p>
-</aside></div></section>
-<section class="notes" aria-label="About the comparison"><div><h2>What these images show</h2><p>Real input and output from the same captured VR frame. Each view shows a full left-eye image at its original proportions. Full-resolution lossless images are available above so you can inspect fine detail.</p><p>The comparison is captured before optional ReShade color grading. The original already includes Snowymoon lighting; the slider isolates the neural edit.</p></div><div><h2>About the preview</h2><p>Flicker and distortion can still occur in motion. Still screenshots show the appearance of the effect; they cannot show headset comfort or performance.</p><p>Medium comparisons are available now. Low, High and Ultra comparisons are coming.</p></div></section>
-</main><footer><span>Independent community project · Experimental preview</span><div><a href="credits.html">Credits & licenses</a><a href="assets/provenance.json">Image provenance</a></div><p>Not affiliated with or endorsed by SCS Software, NVIDIA, Snowymoon, ReShade or RenoDX. Third-party software and model files are supplied separately by the user.</p></footer>
+<div class="intro"><h1>See the difference.</h1><p>Drag across each image to compare. Open a larger view to inspect the details.</p></div>
+<div class="quality-bar"><div class="quality-controls"><span id="quality-label">Quality</span><div class="segments" role="group" aria-labelledby="quality-label"><button data-quality="low" aria-pressed="false">Low</button><button data-quality="medium" aria-pressed="true">Medium</button><button data-quality="high" aria-pressed="false">High</button><button data-quality="ultra" aria-pressed="false">Ultra</button></div></div><p id="quality-summary" aria-live="polite">Medium · 1 pass · 65% resolution · 75% square</p></div>
+<div class="scene-nav"><a href="#exterior">Outside the truck ↓</a><a href="#cab">Inside the cab ↓</a><span>Left eye · full proportions</span></div>
+<p id="page-status" role="status">Loading comparisons…</p><div id="scenes"></div>
+<details class="method"><summary>How these comparisons were made</summary><p>Two real VR frames, captured with Snowymoon lighting. The exterior uses the latest capture; the cab uses the retained interior capture. Each original was held still and processed through all four quality presets and three neural styles. Clean, Cooler and Cold were then applied using the preview's own color shaders.</p><p>Every slider starts from the same ungraded original. Model preset 1, intensity 2 and 100% final blend are fixed. These are processed still frames with zero motion input, not recordings of moving gameplay. They show appearance; flicker and frame rate need a headset test.</p><p>The grid uses smaller lossless previews. Full-size images preserve the native 2504 × 2600 pixels without lossy compression. <a href="assets/provenance.json">Processing details and image hashes ↗</a></p></details>
+<div class="get-started"><div><h2>Take it into VR.</h2><p>Requirements, downloads and a short setup guide.</p></div><a class="button" href="setup.html">Get started ↗</a></div>
+</main>
+<footer><span>Community preview · v0.1</span><a href="credits.html">Credits & licenses</a><p>Independent project. Not affiliated with SCS Software or NVIDIA. Installer coming soon.</p></footer>
+<dialog id="detail" aria-labelledby="detail-title"><div class="dialog-bar"><h2 id="detail-title"></h2><button id="close-detail" aria-label="Close larger comparison">Close ×</button></div><div id="detail-content"></div><div class="full-links"><a id="full-original" target="_blank" rel="noopener">Full-size original ↗</a><a id="full-result" target="_blank" rel="noopener">Full-size result ↗</a><span>Native pixels · lossless</span></div></dialog>
+<noscript><p class="noscript">Enable JavaScript for the comparison sliders. <a href="assets/comparisons.json">Image index</a></p></noscript>
 </body></html>

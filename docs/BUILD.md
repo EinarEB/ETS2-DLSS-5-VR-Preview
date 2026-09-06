@@ -10,6 +10,8 @@ The candidate was built with MSVC toolset **14.44.35207** and Windows SDK **10.0
 
 Run `python tools/package.py` after building and reviewing the docs. It stages an explicit payload, verifies required source dependencies, writes hashes and creates the candidate ZIP in `dist`. It never searches a game installation or copies user downloads. A package is still a candidate until its physical test is recorded; the script does not publish to GitHub.
 
+The installer and generated source ZIP omit the large comparison photos. To work on the gallery, use the repository checkout, run `python tools/build-site.py`, then serve `docs` with a local HTTP server.
+
 ## Tests and their limits
 
 - `preview_blend_test.cpp` exercises focus/release/press behavior, runtime generations, manual overrides and delivery acknowledgement without ReShade.
@@ -22,4 +24,4 @@ The setup fixture retains its tiny files and a report under `%TEMP%\ets2-preview
 
 The integration source is derived from Feeder 0.13.1-beta.1 and the MIT bridge. The current changes separate stereo resources, enforce matched depth, support region selection and multiple passes, preserve native detail, stabilize the neural edit, add frame-consistent comparison/status, and prepare a local installation. Shader adaptation provenance and licenses are listed in `THIRD-PARTY-NOTICES.md`.
 
-Do not put game files, Snowymoon binaries/credentials, RenoDX consumer binaries, NVIDIA model DLLs, private configurations, captures or test profiles in this repository. `package.py` uses explicit source and payload lists, but a maintainer must still review the resulting archive before publishing.
+Keep game files, Snowymoon binaries/credentials, RenoDX consumer binaries, NVIDIA model DLLs, private configurations, raw capture packets and test profiles out of this repository. Curated comparison images live in `docs/assets/gallery`. `package.py` uses explicit source and payload lists; review the resulting archive before publishing.

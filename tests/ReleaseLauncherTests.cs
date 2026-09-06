@@ -86,7 +86,7 @@ internal static class ReleaseLauncherTests {
             });
             Case("model preset read and fallback",()=>{
                 var selector=(ComboBox)Get("model");
-                Check(selector.Items.Cast<object>().Select(x=>x.ToString()).SequenceEqual(new[]{"Default","Preset 1 (tested)","Preset 2","Preset 3"}),"model selector exposes exact ordered labels for Classic NRPreset 0 through 3");
+                Check(selector.Items.Cast<object>().Select(x=>x.ToString()).SequenceEqual(new[]{"Default","Preset 1","Preset 2","Preset 3"}),"model selector exposes exact ordered labels for Classic NRPreset 0 through 3");
                 foreach(var value in new[]{"missing","bad","-1","4"}) {
                     ResetConfigs();
                     string desktop=value=="missing"?Desktop().Replace("NRPreset=3\r\n",""):Desktop().Replace("NRPreset=3\r\n","NRPreset="+value+"\r\n");
@@ -169,6 +169,11 @@ internal static class ReleaseLauncherTests {
                 File.SetLastWriteTimeUtc(observer,DateTime.UtcNow.AddSeconds(-20));Check(!Ready(),"observer older than 15 seconds rejected");Two();Set("launchedAt",DateTime.UtcNow.AddSeconds(5));Check(!Ready(),"observer written before launch rejected");Set("launchedAt",DateTime.UtcNow.AddSeconds(-2));
                 Observe(new[]{0,1,10,1},new[]{1,1,11,1},new[]{0,2,10,1},new[]{1,2,11,1});Check(!Ready(),"different eye frame IDs rejected");Observe(new[]{0,1,10,1},new[]{1,1,10,1},new[]{0,2,11,1},new[]{1,2,11,1});Check(!Ready(),"different pass frame IDs rejected");Observe(new[]{0,1,10,1},new[]{1,1,10,1},new[]{0,2,10,1},new[]{1,2,10,0});Check(!Ready(),"failed last eye pass rejected");Observe(new[]{0,1,0,1},new[]{1,1,0,1},new[]{0,2,0,1},new[]{1,2,0,1});Check(!Ready(),"zero frame IDs rejected");Observe(new[]{0,1,10,1},new[]{0,1,10,1},new[]{0,2,10,1},new[]{0,2,10,1});Check(!Ready(),"duplicate one-eye slots cannot fake stereo readiness");
                 Two();Set("activePasses",0);Check(!Ready(),"uninitialized active pass count rejected");Set("activePasses",3);Check(!Ready(),"unsupported active pass count rejected");Set("activePasses",1);Observe(new[]{0,1,10,1},new[]{1,1,10,1},new[]{0,2,10,0},new[]{1,2,10,0});Check(Ready(),"one-pass readiness ignores unneeded failed second-pass slots");
+            });
+            Case("comparison status after exit",()=>{
+                Set("game",null);var before=Snapshot();var label=(Label)Get("comparisonStatus");label.Text="Selected blend: 100% — waiting for a matching VR frame";
+                Select("toggleKey",1);Call("RefreshComparisonStatus");Check(label.Text.Contains("Pause")&&!label.Text.Contains("waiting"),"an ended session clears stale frame status and shows the selected comparison key");
+                Select("toggleKey",2);Call("RefreshComparisonStatus");Check(!label.Text.Contains("Pause")&&!label.Text.Contains("Scroll Lock"),"a disabled comparison key is not advertised while idle");Check(Same(before),"idle status refresh changes no settings");
             });
             Case("bounded capture metadata",()=>{string p=Capture();Check(Complete(p),"complete tiny four-frame ten-plane SBS capture accepted");Write(Path.Combine(p,"frame-3-result.raw"),"1234567");Check(!Complete(p),"truncated last-frame result rejected");Capture();Write(Path.Combine(p,"session.json"),"{\"complete\":false,\"written\":0,\"requested\":4}");Check(!Complete(p),"incomplete capture rejected");Capture();File.Delete(Path.Combine(p,"frame-3.json"));Check(!Complete(p),"missing fourth frame metadata rejected");});
             Check(immutable.All(x=>FHash(x.Key)==x.Value),"original-config and settings-manifest sentinels unchanged across entire suite");Check(!File.Exists(P("game-root/bin/win_x64/eurotrucks2.exe")),"no actual or fixture game executable was supplied");

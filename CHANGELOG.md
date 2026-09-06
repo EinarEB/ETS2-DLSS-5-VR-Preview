@@ -2,6 +2,9 @@
 
 ## v0.1 — release candidate
 
+- Same-frame comparison gallery: four qualities, three neural styles and three color looks, with native lossless images.
+- Simpler installer and launcher layouts, expandable secondary options, and correct idle status after a session closes.
+
 - Paired-eye image/depth transport for ETS2 OpenXR, with separate neural features and motion history.
 - Centered square input, adjustable work resolution and one or two passes per eye.
 - Low, Medium, High and Ultra presets; Medium is the default.

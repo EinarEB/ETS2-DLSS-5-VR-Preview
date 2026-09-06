@@ -2,7 +2,7 @@
 
 [![View interactive comparisons — cab and exterior before/after slider](docs/images/comparisons.svg)](https://einareb.github.io/ETS2-DLSS-5-VR-Preview/)
 
-### [Explore the before / after comparisons →](https://einareb.github.io/ETS2-DLSS-5-VR-Preview/)
+### [Explore all 72 before / after comparisons →](https://einareb.github.io/ETS2-DLSS-5-VR-Preview/)
 
 DLSS 5 neural rendering for **Euro Truck Simulator 2 in VR**, with Snowymoon lighting and four quality presets.
 
@@ -42,7 +42,7 @@ Connect your headset and keep Steam open. For Virtual Desktop, select **VDXR**. 
 
 On first launch, create a **new local profile with Steam Cloud unchecked**, set up your wheel or controller, and activate Snowymoon if prompted (**End** opens its menu). Enter the truck and let initialization finish.
 
-Start with **Medium · Natural · intensity 2 · Cooler color**.
+Start with **Medium · Natural · intensity 2 · Cooler**.
 
 ## Adjust and compare
 

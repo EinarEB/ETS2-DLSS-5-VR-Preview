@@ -1,26 +1,50 @@
 'use strict';
-const presets={low:{name:'Low',passes:1,resolution:50,crop:'60%',description:'A smaller neural region, with the lightest processing.'},medium:{name:'Medium',passes:1,resolution:65,crop:'75%',description:'The starting point for smoother frame delivery.'},high:{name:'High',passes:2,resolution:80,crop:'90%',description:'A larger neural region and a second pass.'},ultra:{name:'Ultra',passes:2,resolution:100,crop:'Whole eye',description:'Two passes at full resolution across the entire eye.'}};
-const byId=id=>document.getElementById(id);
-let data,scene='cab',preset='medium',request=0,ready=false;
-function split(value){const n=Math.max(0,Math.min(100,Number(value)));byId('wipe').value=n;byId('viewer').style.setProperty('--split',n+'%');byId('wipe').setAttribute('aria-valuetext',`${n} percent original, ${100-n} percent neural edit`);}
-function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Image could not be loaded'));img.src=url;});}
-async function render(){
- if(!data)return;const id=++request,s=data.scenes[scene],p=presets[preset],sample=s.presets[preset],viewer=byId('viewer');ready=false;
- document.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.scene===scene)));
- document.querySelectorAll('[data-preset]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.preset===preset)));
- byId('preset-title').textContent=p.name;byId('preset-description').textContent=p.description;byId('passes').textContent=p.passes;byId('resolution').textContent=p.resolution+'%';byId('crop').textContent=p.crop;
- byId('wipe').disabled=true;byId('show-neural').disabled=true;byId('show-original').disabled=true;byId('viewer-message').hidden=false;byId('viewer-message').textContent='Loading the captured frame…';viewer.setAttribute('aria-busy','true');viewer.classList.add('no-result');byId('after-image').hidden=true;byId('before-image').hidden=true;
- byId('result-link').hidden=true;byId('original-link').removeAttribute('href');byId('sample-kind').textContent=sample?'REAL VR CAPTURE':'COMPARISON QUEUED';
- try{
-  await Promise.all([loadImage(s.original),...(sample?[loadImage(sample.image)]:[])]);if(id!==request)return;
-  byId('before-image').src=s.original;byId('before-image').alt=`Original ${s.title}, captured in the left eye before the neural edit`;byId('before-image').hidden=false;byId('original-link').href=s.original_full||s.original;
-  byId('capture-details').textContent=`${s.width} × ${s.height} pixels · left eye · ${s.captured}. Before optional color grading.`;
-  if(sample){byId('after-image').src=sample.image;byId('after-image').alt=`${s.title} with the ${p.name} neural-rendering preset`;byId('after-image').hidden=false;viewer.classList.remove('no-result');byId('after-label').textContent=p.name+' · neural edit';byId('viewer-message').hidden=true;byId('result-link').href=sample.image_full||sample.image;byId('result-link').hidden=false;byId('sample-note').textContent=sample.note;byId('wipe').disabled=false;byId('show-neural').disabled=false;byId('show-original').disabled=false;byId('drag-hint').textContent='Drag to compare · use ← → on the slider';ready=true;split(50);}
-  else{byId('viewer-message').textContent=`${p.name} comparison is awaiting processing. This is the original image.`;byId('sample-note').textContent='The same captured input will be replayed through this preset. No result is shown until that run has been verified.';byId('drag-hint').textContent='Choose Medium to use the comparison slider.';}
- }catch(error){if(id!==request)return;byId('viewer-message').textContent='The image could not be loaded. Refresh the page to retry.';byId('sample-note').textContent='Image unavailable.';}
- finally{if(id===request)viewer.setAttribute('aria-busy','false');}
+const qualities={low:'Low · 1 pass · 50% resolution · 60% square',medium:'Medium · 1 pass · 65% resolution · 75% square',high:'High · 2 passes · 80% resolution · 90% square',ultra:'Ultra · 2 passes · 100% resolution · whole eye'};
+const styles=['natural','default','cinematic'],looks=['clean','cooler','cold'];
+const title=s=>s[0].toUpperCase()+s.slice(1),el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e;};
+let data,quality='medium',opener;
+const detail=document.getElementById('detail'),content=document.getElementById('detail-content');
+function viewer(original,result,label,large=false){
+ const box=el('div','viewer loading');box.style.setProperty('--split','50%');box.setAttribute('aria-busy','true');
+ const after=el('img'),before=el('img','before');after.alt=label;before.alt='Original captured image';
+ for(const img of [after,before]){img.width=2504;img.height=2600;img.draggable=false;img.decoding='async';if(!large)img.loading='lazy';}
+ const captions=el('div','image-labels');captions.append(el('span','','Original'),el('span','','DLSS 5'));
+ const divider=el('div','divider');divider.setAttribute('aria-hidden','true');divider.append(el('span','','↔'));
+ const range=el('input');range.type='range';range.min='0';range.max='100';range.value='50';range.disabled=true;range.setAttribute('aria-label',label+' — original image coverage');
+ const split=()=>{box.style.setProperty('--split',range.value+'%');range.setAttribute('aria-valuetext',`${range.value}% original, ${100-Number(range.value)}% processed`);};range.addEventListener('input',split);split();
+ const message=el('span','image-status','Loading…');let loaded=0;
+ for(const img of [after,before]){img.onload=()=>{if(++loaded===2){range.disabled=false;box.classList.remove('loading');box.setAttribute('aria-busy','false');message.remove();}};img.onerror=()=>{message.textContent='Image unavailable. Reload to retry.';box.setAttribute('aria-busy','false');};}
+ box.append(after,before,captions,divider,range,message);after.src=result;before.src=original;return box;
 }
-document.querySelectorAll('[data-scene]').forEach(b=>b.addEventListener('click',()=>{scene=b.dataset.scene;render();}));
-document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{preset=b.dataset.preset;render();}));
-byId('wipe').addEventListener('input',e=>split(e.target.value));byId('show-original').addEventListener('click',()=>{if(ready)split(100);});byId('show-neural').addEventListener('click',()=>{if(ready)split(0);});
-fetch('assets/comparisons.json').then(r=>{if(!r.ok)throw new Error('Manifest unavailable');return r.json();}).then(v=>{data=v;render();}).catch(()=>{byId('viewer-message').textContent='Comparison data could not be loaded. Refresh the page to retry.';byId('viewer').setAttribute('aria-busy','false');});
+function openDetail(scene,sample,label,button){
+ opener=button;document.getElementById('detail-title').textContent=label;
+ content.replaceChildren(viewer(scene.original.full,sample.full,label,true));
+ document.getElementById('full-original').href=scene.original.full;document.getElementById('full-result').href=sample.full;
+ detail.showModal();document.body.classList.add('dialog-open');document.getElementById('close-detail').focus();
+}
+detail.addEventListener('close',()=>{document.body.classList.remove('dialog-open');content.replaceChildren();if(opener?.isConnected)opener.focus();});
+document.getElementById('close-detail').addEventListener('click',()=>detail.close());detail.addEventListener('click',e=>{if(e.target===detail){const r=detail.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)detail.close();}});
+function render(){
+ if(!data)return;
+ document.querySelectorAll('[data-quality]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.quality===quality)));
+ document.getElementById('quality-summary').textContent=qualities[quality];
+ const fragment=document.createDocumentFragment();
+ for(const key of ['exterior','cab']){
+  const scene=data.scenes[key],section=el('section','scene');section.id=key;
+  const heading=el('div','scene-heading');heading.append(el('h2','',scene.title),el('p','',scene.caption));section.append(heading);
+  for(const style of styles){
+   const row=el('div','style-row');row.append(el('h3','',title(style)));const grid=el('div','comparison-grid');
+   for(const look of looks){
+    const sample=scene.samples[`${quality}-${style}-${look}`],label=`${scene.title} · ${title(quality)} · ${title(style)} · ${title(look)}`;
+    const card=el('article','comparison-card');const cardHeading=el('div','card-heading');cardHeading.append(el('h4','',title(look)));
+    const button=el('button','open-detail','Larger view ↗');button.setAttribute('aria-label','Open '+label);button.addEventListener('click',()=>openDetail(scene,sample,label,button));cardHeading.append(button);
+    card.append(cardHeading,viewer(scene.original.preview,sample.preview,label));grid.append(card);
+   }
+   row.append(grid);section.append(row);
+  }
+  fragment.append(section);
+ }
+ document.getElementById('scenes').replaceChildren(fragment);document.getElementById('page-status').hidden=true;
+}
+document.querySelectorAll('[data-quality]').forEach(b=>b.addEventListener('click',()=>{if(quality!==b.dataset.quality){quality=b.dataset.quality;render();}}));
+fetch('assets/comparisons.json?v=2').then(r=>{if(!r.ok)throw Error('Missing comparison index');return r.json();}).then(v=>{data=v;render();}).catch(()=>{document.getElementById('page-status').textContent='The comparisons could not be loaded. Refresh the page to retry.';});

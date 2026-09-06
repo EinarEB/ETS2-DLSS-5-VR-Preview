@@ -1,4 +1,4 @@
-// Copyright (c) 2026 ETS2 VR preview contributors. SPDX-License-Identifier: MIT
+﻿// Copyright (c) 2026 ETS2 VR preview contributors. SPDX-License-Identifier: MIT
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,6 +25,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
     readonly Label status = new Label();
     readonly Button launch = new Button(), capture = new Button(), restore = new Button();
     readonly Timer timer = new Timer();
+    readonly Panel moreOptions=new Panel();
     string lastCapture = "";
     HashSet<string> capturesBeforeRequest = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     bool capturePending;
@@ -94,7 +95,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
             if(activePasses<1||activePasses>2||selectedQuality[1]<50||selectedQuality[1]>100||
                 (selectedQuality[2]!=0&&(selectedQuality[2]<40||selectedQuality[2]>100)))throw new IOException("Choose a valid quality preset before launching.");
             game=Process.Start(StartInfo());
-            launch.Enabled=false;status.Text="Starting VR…\nCreate or load a local profile in this separate preview.";
+            launch.Enabled=false;status.Text="Starting VR…\nLoad a local preview profile with Steam Cloud off.";
             Log("Started private headset session pid="+game.Id);timer.Start();
         } catch(Exception e){ if(guard!=null){guard.Dispose();guard=null;}status.Text="Preview did not start. "+e.Message;MessageBox.Show(this,e.Message,"Preview could not start",MessageBoxButtons.OK,MessageBoxIcon.Information); }
         finally{starting=false;if(!Active()){launch.Enabled=true;SetOptionsEnabled(true);}try{RefreshQuality();}catch(Exception e){status.Text="Could not read quality settings. "+e.Message;if(!Active())launch.Enabled=false;}}
@@ -178,16 +179,16 @@ internal sealed partial class PreviewLauncher : PreviewForm {
                         else if(c.ContainsKey("complete")&&Convert.ToBoolean(c["complete"]))status.Text="Capture files are incomplete. Keep the game running.\nIf this persists, leave the folder for diagnosis.";
                         else if(c.ContainsKey("reason"))status.Text="Capture: "+c["reason"];
                     }
-                } else if(ready)status.Text=(lastCapture.Length>0?"Comparison capture saved. ":"")+"Recent neural evaluations succeeded for both eyes.\nHome: ReShade settings   ·   End: Snowymoon settings";
-                if(!ready&&!capturePending)status.Text="Waiting for the VR driving scene.\nLoad a local preview profile and enter the truck.";
+                } else if(ready)status.Text=(lastCapture.Length>0?"Comparison capture saved. ":"")+"Neural rendering is active in both eyes.";
+                if(!ready&&!capturePending)status.Text="Waiting for the driving scene. Enter the truck to begin.";
                 return;
             }
-            capture.Enabled=false;
+            capture.Enabled=false;RefreshComparisonStatus();
             if(!settling){settling=true;exitTime=DateTime.UtcNow;status.Text="Game closed. Checking your regular settings…";Log("Private game exited code="+(game==null?"unknown":game.ExitCode.ToString()));}
             var seconds=(DateTime.UtcNow-exitTime).TotalSeconds;
             if(seconds>=5&&guard!=null){guard.Dispose();guard=null;}
             if(guard==null)CheckOriginal();
-            if(seconds>=20){timer.Stop();settling=false;game=null;launch.Enabled=true;SetOptionsEnabled(true);RefreshQuality();RefreshAppearance();restore.Enabled=originalChanged;status.Text=originalChanged?"Another program changed your regular graphics settings.\nUse Restore settings to recover the copy saved before this session.":"Preview session finished. Your regular graphics settings are preserved.\nUse Steam normally to return to your previous installation.";}
+            if(seconds>=20){timer.Stop();settling=false;game=null;launch.Enabled=true;SetOptionsEnabled(true);RefreshQuality();RefreshAppearance();RefreshComparisonStatus();restore.Enabled=originalChanged;status.Text=originalChanged?"Your regular settings changed. Use More options → Restore settings to recover the backup.":"Session finished. Ready for another drive.";}
         }catch(IOException){
             if(!Active()&&settling&&(DateTime.UtcNow-exitTime).TotalSeconds>=20){timer.Stop();settling=false;game=null;launch.Enabled=true;SetOptionsEnabled(true);if(guard!=null){guard.Dispose();guard=null;}restore.Enabled=originalBytes!=null;status.Text="The game closed, but regular settings could not be checked.\nThe settings saved before launch remain backed up in this folder.";}
         }
@@ -206,6 +207,10 @@ internal sealed partial class PreviewLauncher : PreviewForm {
     }
     void RefreshComparisonStatus() {
         try {
+            if(!Active()) {
+                var key=toggleKey.SelectedIndex>=0&&toggleKey.SelectedIndex<2?toggleKey.Text+": compare  ·  ":"";
+                comparisonStatus.Text=key+"Home: ReShade  ·  End: Snowymoon";return;
+            }
             var data=ReadPreviewStatus();
             if(data==null){comparisonStatus.Text="Waiting for current VR image status…";return;}
             if(data.ContainsKey("reason")&&(string)data["reason"]=="restart_required"){
@@ -215,7 +220,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
             ulong delivered=Convert.ToUInt64(data["delivered_tick"]),now=GetTickCount64();
             bool applied=Convert.ToBoolean(data["delivery_this_present"])&&Convert.ToUInt64(data["delivered_frame"])>0&&now>=delivered&&now-delivered<2000&&
                 Convert.ToUInt64(data["selected_serial"])==Convert.ToUInt64(data["delivered_serial"]);
-            comparisonStatus.Text=applied?"VR image blend: "+blend.ToString("0")+"%"+(blend==0?" — neural edit hidden; processing continues":" — neural edit visible"):
+            comparisonStatus.Text=applied?"Effect: "+blend.ToString("0")+"%"+(blend==0?" — hidden; processing continues":" — visible"):
                 "Selected blend: "+blend.ToString("0")+"% — waiting for a matching VR frame";
         }catch{comparisonStatus.Text="VR status is updating…";}
     }
@@ -229,23 +234,27 @@ internal sealed partial class PreviewLauncher : PreviewForm {
         }catch(Exception e){status.Text="Could not save diagnostics. "+e.Message;}
     }
     static void CreateHandles(Control parent){var handle=parent.Handle;foreach(Control child in parent.Controls)CreateHandles(child);parent.PerformLayout();}
+    static Button QuietButton(string text,int x,int y,int width) {
+        var button=new Button{Text=text,Location=new Point(x,y),Size=new Size(width,36),FlatStyle=FlatStyle.Flat,BackColor=Color.FromArgb(245,247,246)};
+        button.FlatAppearance.BorderSize=0;return button;
+    }
     PreviewLauncher() {
-        LoadSettings();Text="ETS2 DLSS 5 VR Preview v0.1";ClientSize=new Size(704,722);Font=new Font("Segoe UI",11);BackColor=Color.FromArgb(245,247,246);ForeColor=Color.FromArgb(28,39,49);StartPosition=FormStartPosition.CenterScreen;MaximizeBox=false;FormBorderStyle=FormBorderStyle.FixedDialog;
-        Controls.Add(new Label{Text="ETS2 DLSS 5 VR",Font=new Font("Segoe UI",25,FontStyle.Bold),Location=new Point(24,22),Size=new Size(650,48)});
-        Controls.Add(new Label{Text="PREVIEW v0.1  ·  Snowymoon lighting + neural rendering",Font=new Font("Segoe UI",10,FontStyle.Bold),ForeColor=Color.FromArgb(39,105,89),Location=new Point(28,77),Size=new Size(650,26)});
-        Controls.Add(new Label{Text="Use a local preview profile. Keep its Steam Cloud option off.",Font=new Font("Segoe UI",10),Location=new Point(28,111),Size=new Size(650,26)});
+        LoadSettings();Text="ETS2 DLSS 5 VR Preview";ClientSize=new Size(640,554);Font=new Font("Segoe UI",10);BackColor=Color.FromArgb(245,247,246);ForeColor=Color.FromArgb(28,39,49);StartPosition=FormStartPosition.CenterScreen;MaximizeBox=false;FormBorderStyle=FormBorderStyle.FixedDialog;
+        Controls.Add(new Label{Text="ETS2 DLSS 5 VR",Font=new Font("Segoe UI",24,FontStyle.Bold),Location=new Point(24,24),Size=new Size(458,45)});
+        Controls.Add(new Label{Text="PREVIEW 0.1",Font=new Font("Segoe UI",9,FontStyle.Bold),ForeColor=Color.FromArgb(39,105,89),Location=new Point(495,40),Size=new Size(117,23),TextAlign=ContentAlignment.MiddleRight});
+        moreOptions.Location=new Point(28,560);moreOptions.Size=new Size(584,90);moreOptions.Visible=false;Controls.Add(moreOptions);
         BuildOptions();
-        launch.Text="Start VR";launch.Location=new Point(28,421);launch.Size=new Size(308,48);launch.BackColor=Color.FromArgb(39,105,89);launch.ForeColor=Color.White;launch.FlatStyle=FlatStyle.Flat;launch.Click+=LaunchGame;
-        capture.Text="Capture comparison frames";capture.Location=new Point(352,421);capture.Size=new Size(320,48);capture.FlatStyle=FlatStyle.Flat;capture.Enabled=false;capture.Click+=RequestCapture;
-        status.Text="Keep Steam and Virtual Desktop running, connect the headset, then start VR.";status.Location=new Point(28,493);status.Size=new Size(644,60);status.Font=new Font("Segoe UI",11,FontStyle.Bold);
-        comparisonStatus.Text="Scroll Lock: original / neural edit. Home: ReShade. End: Snowymoon.";comparisonStatus.Location=new Point(28,561);comparisonStatus.Size=new Size(644,46);comparisonStatus.Font=new Font("Segoe UI",10);
-        var files=new Button{Text="Open captures",Location=new Point(28,625),Size=new Size(200,36),FlatStyle=FlatStyle.Flat};files.Click+=(s,e)=>OpenFolderOrGuide(Path.Combine(root,"DLSS5-Captures"));
-        var diagnostic=new Button{Text="Save diagnostics",Location=new Point(244,625),Size=new Size(206,36),FlatStyle=FlatStyle.Flat};diagnostic.Click+=SaveDiagnostics;
-        var guide=new Button{Text="Quick start guide",Location=new Point(466,625),Size=new Size(206,36),FlatStyle=FlatStyle.Flat};guide.Click+=(s,e)=>OpenFolderOrGuide(Path.Combine(root,"Read me first.html"));
-        restore.Text="Restore regular settings";restore.Location=new Point(28,676);restore.Size=new Size(242,31);restore.Enabled=false;restore.FlatStyle=FlatStyle.Flat;restore.Click+=RestoreOriginal;
-        Controls.Add(new Label{Text="Medium is the recommended starting point.",Location=new Point(298,681),Size=new Size(374,27),Font=new Font("Segoe UI",10),ForeColor=Color.FromArgb(76,91,105)});
-        Controls.AddRange(new Control[]{launch,capture,status,comparisonStatus,files,diagnostic,guide,restore});timer.Interval=1000;timer.Tick+=Tick;
-        var tips=new ToolTip();tips.SetToolTip(capture,"Records four stereo frames. It can briefly pause rendering and use several GB of disk space.");
+        launch.Text="Start VR";launch.Location=new Point(28,344);launch.Size=new Size(350,46);launch.BackColor=Color.FromArgb(39,105,89);launch.ForeColor=Color.White;launch.FlatStyle=FlatStyle.Flat;launch.FlatAppearance.BorderSize=0;launch.Click+=LaunchGame;
+        capture.Text="Capture comparison";capture.Location=new Point(394,344);capture.Size=new Size(218,46);capture.FlatStyle=FlatStyle.Flat;capture.FlatAppearance.BorderColor=Color.FromArgb(192,204,198);capture.Enabled=false;capture.Click+=RequestCapture;
+        status.Text="Connect your headset and open Steam, then start VR.";status.Location=new Point(28,412);status.Size=new Size(584,48);status.Font=new Font("Segoe UI",10);
+        comparisonStatus.Location=new Point(28,469);comparisonStatus.Size=new Size(584,30);comparisonStatus.Font=new Font("Segoe UI",9);comparisonStatus.ForeColor=Color.FromArgb(82,97,109);RefreshComparisonStatus();
+        var files=QuietButton("Open captures",20,510,136);files.Click+=(s,e)=>OpenFolderOrGuide(Path.Combine(root,"DLSS5-Captures"));
+        var guide=QuietButton("Setup guide ↗",166,510,136);guide.Click+=(s,e)=>OpenFolderOrGuide(Path.Combine(root,"Read me first.html"));
+        var more=QuietButton("More options +",454,510,166);more.Click+=(s,e)=>{moreOptions.Visible=!moreOptions.Visible;more.Text=moreOptions.Visible?"Fewer options −":"More options +";ClientSize=new Size(640,moreOptions.Visible?674:554);};
+        var diagnostic=QuietButton("Save diagnostics",206,25,164);diagnostic.Click+=SaveDiagnostics;moreOptions.Controls.Add(diagnostic);
+        restore.Text="Restore settings";restore.Location=new Point(386,25);restore.Size=new Size(198,36);restore.Enabled=false;restore.FlatStyle=FlatStyle.Flat;restore.FlatAppearance.BorderColor=Color.FromArgb(192,204,198);restore.Click+=RestoreOriginal;moreOptions.Controls.Add(restore);
+        Controls.AddRange(new Control[]{launch,capture,status,comparisonStatus,files,guide,more});timer.Interval=1000;timer.Tick+=Tick;
+        var tips=new ToolTip();tips.SetToolTip(capture,"Records four stereo frames. This can briefly pause rendering and uses several GB of disk space.");tips.SetToolTip(restore,"Recover your regular game's graphics settings from the backup saved before launch.");
         FormClosing+=(s,e)=>{if(starting||Active()||settling){e.Cancel=true;MessageBox.Show(this,"Close ETS2 first and let the settings check finish.","Preview session is active",MessageBoxButtons.OK,MessageBoxIcon.Information);}};
     }
     [STAThread] static int Main(string[] args) {
@@ -262,7 +271,7 @@ internal sealed partial class PreviewLauncher : PreviewForm {
             PreviewForm.RenderOnly=args.Contains("--render");
             using(var app=new PreviewLauncher()) {
                 if(args.Contains("--verify")){app.Verify();var info=app.StartInfo();File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"launcher-verification.json"),app.json.Serialize(new { verified=true,game_launched=false,private_home=info.Arguments,explicit_layer=info.EnvironmentVariables["XR_API_LAYER_PATH"],physical_runtime_override=info.EnvironmentVariables["XR_RUNTIME_JSON"] }));return 0;}
-                if(args.Contains("--render")){app.SavePreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"launcher-preview.png"));return 0;}
+                if(args.Contains("--render")){app.SavePreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"launcher-preview.png"));app.moreOptions.Visible=true;app.ClientSize=new Size(640,674);app.SavePreview(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"launcher-options-preview.png"));return 0;}
                 bool acquired;
                 using(var single=new System.Threading.Mutex(true,@"Local\ETS2-VR-Preview-"+Hash(Encoding.UTF8.GetBytes(app.root.ToUpperInvariant())),out acquired)){
                     if(!acquired){MessageBox.Show("The launcher for this preview is already open.","ETS2 VR preview");return 0;}

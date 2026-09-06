@@ -1,121 +1,1357 @@
 {
-  "schema": 1,
-  "method": "Lossless left-eye RGB export from matching original/result planes of real VR captures. No inference, grading, retouching or resampling was performed for this export.",
-  "capture_stage": "Feeder input and output, before later ReShade effects",
-  "current_candidate_headset_validated": false,
-  "gpu_replay_status": "Pending user availability",
+  "schema": 2,
+  "method": "One captured stereo input per scene, held stationary with its captured depth and mask and zero motion. Independent neural histories warm up before retention. Both eyes and every requested pass must succeed. Each retained result is graded through the actual release shaders. Published images show the left eye.",
+  "fixed_controls": {
+    "model_preset": 1,
+    "intensity": 2,
+    "structure": 0.5,
+    "final_blend": 1
+  },
+  "encoding": "Native lossless WebP, plus 768-pixel-wide Lanczos previews encoded losslessly.",
   "images": [
     {
-      "file": "cab-original.webp",
-      "sha256": "a23400fc9eef3d1a5b364bebb93e6da27d6f7da7235cf70cb3fe2fa7e7fce1d8",
-      "source_raw_sha256": "0693ccf9bc9b9b432ea3e7f11c8a1bacabe536a2c3f33cc53802473b39a02a99",
-      "source_capture": "20260906-170821-31904-158718703",
-      "source_frame": 5516,
-      "source_kind": "original",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
-      "archived_png_sha256": "3b05759419e79769c1ba1f3160b1a524b2f595b9135fa07878c8b8f97d0eee6c"
+      "file": "gallery/exterior/original.webp",
+      "sha256": "ebf5a090b2ceb71bd1e20184677ce9083249aea6d7ad00c16e06877dad0fc91d",
+      "encoding": "lossless WebP",
+      "kind": "native"
     },
     {
-      "file": "cab-medium.webp",
-      "sha256": "521175673f845bdf47f9023f092f8821b03a4eaebd4fa01ae530573a790cae77",
-      "source_raw_sha256": "dabff0d6a3b0899177d18dace1d40f3e389928faaecc421e46e76b1063fcde92",
-      "source_capture": "20260906-170821-31904-158718703",
-      "source_frame": 5516,
-      "source_kind": "result",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
-      "archived_png_sha256": "921b62e3c6f7a01a059571bc72fb8279299a1b1059e2a95de7370a45f4286e9e"
+      "file": "gallery/exterior/original-preview.webp",
+      "sha256": "1975d01a5bd953a6a98f5534c5e7a3281ffc21da54347d50e1cd9e5d814986ff",
+      "encoding": "lossless WebP",
+      "kind": "preview"
     },
     {
-      "file": "exterior-original.webp",
-      "sha256": "db720172de8649fa155759e49ed029a21c90be315465d8f0e6cd54d4855a0eb2",
-      "source_raw_sha256": "f3263b3a3df20fa3991cb559a4c54c94e6dff23955bf8ffeffc70ae32bfd7d53",
-      "source_capture": "20260906-170900-31904-158758093",
-      "source_frame": 6914,
-      "source_kind": "original",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
-      "archived_png_sha256": "b6375b11161ce605d65294178efe409421509b7c94b35158304d4c98e1931e5a"
+      "file": "gallery/cab/original.webp",
+      "sha256": "938acaaa130603529b295a4952b061f29780621d8d842ece9e500b98ff8819af",
+      "encoding": "lossless WebP",
+      "kind": "native"
     },
     {
-      "file": "exterior-medium.webp",
-      "sha256": "8fa55f350add115d1e4a75303f6b120ce59732b48ff2805d76998e50be02724e",
-      "source_raw_sha256": "5972b972d737117d3452b74cfad682895d4d6c1ef1fbda7c8fe02bbc94d645cc",
-      "source_capture": "20260906-170900-31904-158758093",
-      "source_frame": 6914,
-      "source_kind": "result",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
-      "archived_png_sha256": "5c7b098dc7d473fd96eeeff67a62c6a9454390e0daf3b3d682ccaeabd482ff0f"
+      "file": "gallery/cab/original-preview.webp",
+      "sha256": "496eec53ef88116ee10d6d893f1fbbc7ad9ca085c1fa6687447689f8588d5e4d",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-default-clean.webp",
+      "sha256": "f7c052e7facfb3492e40688b133797593da35286d25e6ceddcf849067c1e7803",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-default-clean-preview.webp",
+      "sha256": "1eb4022be7a12913287a3acdb5f0856c649698d789b1f37e3e4046b3cd521459",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-default-cooler.webp",
+      "sha256": "043175874814a00c587f130ce0dbb2e661366697b785751149a6585c12620a9d",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-default-cooler-preview.webp",
+      "sha256": "48589b9face0a495df104fda88aac83d5ffbd8daf8f42ffdf5df1b63196ec302",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-default-cold.webp",
+      "sha256": "69167babd5f94edf38ce61934fac5741510ae9f131fec241af8b45e234631186",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-default-cold-preview.webp",
+      "sha256": "bc054a846ed286983a5a22775752132a0d67319753a7e3e744103b6fd0f1363b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-natural-clean.webp",
+      "sha256": "d3f5fcf157e4793f1efe26bcd88a3c6f2a503b8f690203652a6bb2233e4a429c",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-natural-clean-preview.webp",
+      "sha256": "80058a7907b7ed4b9b471d4bb0b0d7ca6f20cca18acd4348f840b40ca0296a50",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-natural-cooler.webp",
+      "sha256": "93366ddce005d40c3a558e172c10758123f8548863ce8b8cb78b719b68673ed8",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-natural-cooler-preview.webp",
+      "sha256": "966fe3d78f777ca54ea667928689c126fdc9bc3f22ae735845bc112d5dcf0bcf",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-natural-cold.webp",
+      "sha256": "e693d3a6b8a84c6dbf0bb465a698e3ac11bb01c98f555fbc3a3b85d0d63c5dae",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-natural-cold-preview.webp",
+      "sha256": "ed79f5aba2e71eb086f80bee86e73d46df839a6337e891571b7c3de13c0b1f2c",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-cinematic-clean.webp",
+      "sha256": "e0325b3460719165111efd7fe5af55f99b7076a70faa85ecd27757dbe299c9fe",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-cinematic-clean-preview.webp",
+      "sha256": "d691a6623bd9884f422e4c8f5e97326bc189a0d7f6a069e06840850d30faaf88",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-cinematic-cooler.webp",
+      "sha256": "292016de093955029e4e3310494371c5ad97a1cfe93195961eb94d6762f79677",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-cinematic-cooler-preview.webp",
+      "sha256": "578bf8d5d5fc7676f1e54e83a666da2bf29914bea9ce8822762a24b3c5ebf55c",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/low-cinematic-cold.webp",
+      "sha256": "580a1711d060b3ea1b07ef0646a1a53ca76d3c94918ba0d7d25c8af911f57ece",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/low-cinematic-cold-preview.webp",
+      "sha256": "46531a669ec79bcad9d792f0ee90c10c94080bc324420908653ea9b86aa65968",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-default-clean.webp",
+      "sha256": "34a78b0e90168704c44cae322cb630cc2acf896d103886d248c059d4db1fa874",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-default-clean-preview.webp",
+      "sha256": "71bc50e3fc10f274f2e6d6c9570c683c95c3c792a558f6f8a003f8cfdba68e2a",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-default-cooler.webp",
+      "sha256": "0edca26d8aaf84843321aad25e9e59ce936d2f776b0bc9f82011a12bcc97226a",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-default-cooler-preview.webp",
+      "sha256": "0eaa4b4516806456a5ebd09775e8126e23f6583330904ad535c310fb3f55ee71",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-default-cold.webp",
+      "sha256": "028ec114f9523544e989495c66014726f97b6bf4ab59a5bee7a1fc4087c32c02",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-default-cold-preview.webp",
+      "sha256": "13fadc4c60cbfdc76dc68cb1c14de0574a2bc4891bac6fde1f155070d535266f",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-natural-clean.webp",
+      "sha256": "d0d2d25ad3f366f1e6c1480152307f8cc31d8aea3271cffb4b03ada20896904b",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-natural-clean-preview.webp",
+      "sha256": "6116ba3d0359e4a68118011a93a5f0bf5de2b0d189abb0313202902106fab122",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-natural-cooler.webp",
+      "sha256": "f98f0ab9b2f06c83477b4d4bd0764dae0947cd39a71eefcac4e62d564cf427cf",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-natural-cooler-preview.webp",
+      "sha256": "9c8aeebcea5f018d4815cfcafc96337e3ad171300a76e682918b12e309b45234",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-natural-cold.webp",
+      "sha256": "ce992d33265607566f7b2084f053199ab184d841c7607fac40971581b14ee008",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-natural-cold-preview.webp",
+      "sha256": "70bc8fee34a9bf2c295991af7f5f853c89b40c785ce70a3e10b68e374092868a",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-cinematic-clean.webp",
+      "sha256": "9eecbd83ed20220a40c61d5bc452519056e3aed095b22fa307490413f0df45d4",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-cinematic-clean-preview.webp",
+      "sha256": "43eb64e98812fa25668de2e24055f5d13dd3f88faf73ef5a69825fdb3345bb84",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-cinematic-cooler.webp",
+      "sha256": "5fe2781c46caca17216157145531b731d52d01f0b562d80a9eaa83e003ffda05",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-cinematic-cooler-preview.webp",
+      "sha256": "f2e9d8b3103a1e4d2922717f378a7667af6b394971b110e427ea16a34c829233",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/medium-cinematic-cold.webp",
+      "sha256": "fac8ca7c44c9c8180d116e309751c8d4069a87dddfdaf77e189b476cbf36becc",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/medium-cinematic-cold-preview.webp",
+      "sha256": "29737cbea975d3d753504c1f4ee835e45a92b5f3ed6a10aa916cbe43b81c70f1",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-default-clean.webp",
+      "sha256": "77cd4b1764d12114793d4157c58a5e1ecc8cfe56f6a144ff04a9e6cd3de27206",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-default-clean-preview.webp",
+      "sha256": "f57d9a626ced116affde58245d27f06c4a42eb9814b06167bb7baf1531249219",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-default-cooler.webp",
+      "sha256": "f8f83038e7c944b3a02d092a9c99ef007b69e7340712832508203e203329a8a1",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-default-cooler-preview.webp",
+      "sha256": "b58cf98b6cf60d71bb18067d83f60d20879816c7fd8bf5183a76b2bcabb4db85",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-default-cold.webp",
+      "sha256": "6337b23bdf79ce2042f6e20e02ecffe79d15cc9b75ba965ace6160d8e40af0de",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-default-cold-preview.webp",
+      "sha256": "46afd05c57f9c02dc43dbf0c97a6e3aa788933bb1f2d71d2c9ecae379bac60a1",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-natural-clean.webp",
+      "sha256": "0ca54d3a6646846e0bfe0c8bfa11469d7c42ce924c260c53ebfb7872e793df64",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-natural-clean-preview.webp",
+      "sha256": "8f77f3038d3d4196dde3badfd9bdfc027489dcc57608dac8c3c018461107cc11",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-natural-cooler.webp",
+      "sha256": "72b15333315f6f08916331ea36264133e2c2939e70c9a966db053b468f2876ca",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-natural-cooler-preview.webp",
+      "sha256": "3cbbb992b883a170dd21c64b8fe059073418a5d3dc04b9f1b925ac88761c05df",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-natural-cold.webp",
+      "sha256": "90ef8d6893e15e60d36ba08ccb88d9b29241c0a8e29f1d7fa7b03055c2d62d11",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-natural-cold-preview.webp",
+      "sha256": "36ac40da0c2d1521b2352453f2eeb088023a2358a35b1d6cccdba3cba39302e2",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-cinematic-clean.webp",
+      "sha256": "57afc35d3951cf1a197803154e1a588af0757bc2ea39505d6755753f77b32420",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-cinematic-clean-preview.webp",
+      "sha256": "5a455f3eab494c71a748c5c43a1b535b3bf2e6f06ea0c7217a151a5616e817e3",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-cinematic-cooler.webp",
+      "sha256": "d072554b9c0deae543267c15ad715eb822383dd8ea9c597a24ff143e03b0f9be",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-cinematic-cooler-preview.webp",
+      "sha256": "e978f387fd102e4a094e990ea5fe31440cda186ac1de043166090a77b3191630",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/high-cinematic-cold.webp",
+      "sha256": "eb39b53e653e884ebd530a7ad3fe73c8e0df6a522c77412570c90eef17c2f6e4",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/high-cinematic-cold-preview.webp",
+      "sha256": "7dc829a3ef5247b2c3d9d4e007a31bc6dcf94bfe7d03b52b278ce3a93f870f0c",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-default-clean.webp",
+      "sha256": "c9baa58619ca0510b347ee2269a8e368b9550f41a2c591826f71032608a61407",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-default-clean-preview.webp",
+      "sha256": "84291c1e5f7e5b9b076c702e76f5d7fc2fd0ca84bf384498771ff3a1b774f1f0",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-default-cooler.webp",
+      "sha256": "93de0c4350e3ea574157461f9d1ee4fb68579874ecfc1787a4a75db3d36fabab",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-default-cooler-preview.webp",
+      "sha256": "13d356e6bd69c3e330f2396d740b5713b577d2496bede85023fc620d8a17cc34",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-default-cold.webp",
+      "sha256": "1470a10d1ba4030a1144a39d5f04d8bd9858592c0f5447fb84d08a691e8a4331",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-default-cold-preview.webp",
+      "sha256": "2f5b455b2d916bc7c85ff75c2398d6d5e7b659f2e843b1be0e7bd64e02c7a2a2",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-natural-clean.webp",
+      "sha256": "40e71daa3a0169e86299cb6eeb1d2dab2e8aa5fd9c0bff1a8dc524d1c53f4706",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-natural-clean-preview.webp",
+      "sha256": "c4f9df10c280c979a25f6751c1cfca7cda3aaa61d4c95f82b74322d02d36c993",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-natural-cooler.webp",
+      "sha256": "dfddbff84ce6537f7cd286864a2aff789b588b21387112f31c2043a325ad25b1",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-natural-cooler-preview.webp",
+      "sha256": "5df61c11d19ee7be9900fa169b93b269106be6c6d88f369356ba6756322cf6ff",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-natural-cold.webp",
+      "sha256": "0dea1852cb8609beef1d24d9ce2522a9ffe390881bae6d5fc3182a2b8c92d9c4",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-natural-cold-preview.webp",
+      "sha256": "c6ff4cd2eac54c396ed1ba362fcf277a5e7e7563f4bb0d83addbf56ebccfc70b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-cinematic-clean.webp",
+      "sha256": "08f7f175861611867b779538b218eca9bee77da8e5e0b12115e5e93199f354fe",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-cinematic-clean-preview.webp",
+      "sha256": "9e6d049e624ea249586e71f3731ba3d62791b619c3635fba15a2615eabd93e2a",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-cinematic-cooler.webp",
+      "sha256": "5f6630cc6a5c6e9e6eecfdd5df39ed7de53c7f196bc7f1e087a9b2315a43c9c4",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-cinematic-cooler-preview.webp",
+      "sha256": "ef733eb0cf8b54637475349e6f1b71755931eeb460e2743067aba003eeafdfda",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/exterior/ultra-cinematic-cold.webp",
+      "sha256": "739633bede7f4aa64673d3270c28dfd652e570a4c0be5350a46d6c3f59d9923a",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/exterior/ultra-cinematic-cold-preview.webp",
+      "sha256": "55d1aca351b050a96561796a76b3f0b4801aa3bc7cac54733e2a093e40b6ea8b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-default-clean.webp",
+      "sha256": "5558800d73dc9735fcc5cf6c1943a4674cc1a3e90d2b9fb4f5fa7210072e6d2d",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-default-clean-preview.webp",
+      "sha256": "f5ddcdf2de81b5774123109469595f1cd2bf6b3359611228839567a259e768e4",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-default-cooler.webp",
+      "sha256": "f7a2c007825e5c121be8c44ba1084a5f0f3aa47a6a95215ccb23f2ff9b673de4",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-default-cooler-preview.webp",
+      "sha256": "945f38e1dc4a9801c24d42dade3ff7579f06f2a4aa1e4e3ee796813d6571557d",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-default-cold.webp",
+      "sha256": "23e72448e0f162ba03c3c0e244e10abd1193df4997e200c095f32089ff4182ad",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-default-cold-preview.webp",
+      "sha256": "be31b54ae0a3cb7c9d7783dfefae2d6329f4bb0ab8d460842fde8e2bc6f145f1",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-natural-clean.webp",
+      "sha256": "b6c312a92bae127ca6b27c80ff878293c420c13f2c847df11d852781742bfd97",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-natural-clean-preview.webp",
+      "sha256": "1e395c606b96876759445dc297dae21fd136f33fa5033edbdf3e7c3b6f46581f",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-natural-cooler.webp",
+      "sha256": "6ff01668c9bc894b0f48fd8dfd399f691291f06094e129dc12feea0b4ab0bb1c",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-natural-cooler-preview.webp",
+      "sha256": "fc1f4fc8f4a682ee6d3a426fd8757093038e8ba70d743b951432501ec62be7d3",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-natural-cold.webp",
+      "sha256": "72d956b12e3cfdf1e8db8186f366a6239b9b572f4434a9fd6c60165252a71914",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-natural-cold-preview.webp",
+      "sha256": "7ba2dbcce3aff9b5b01f624012e9df9c911e94918edc591b80a9b2478878f69b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-cinematic-clean.webp",
+      "sha256": "f0882575aba5c575b26a1c1902ae46ae77eba0ce774737c82aeaccf0e9ef3bb0",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-cinematic-clean-preview.webp",
+      "sha256": "c9239cd79d74499f6ae4340eec98a7d8fde183ac845b8404c507d2e636861abd",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-cinematic-cooler.webp",
+      "sha256": "7bdd8b70377367458701cb6db473a099df165a6924c2b822b35cbba79b6765bc",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-cinematic-cooler-preview.webp",
+      "sha256": "96d4db748a195e484c58b0f6cd2f57d6f9dc493e53d2fbb50d65d0166d2aab85",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/low-cinematic-cold.webp",
+      "sha256": "ae85fd03eb6f7bd1dc34fd25d17d27b22b5cd7370e3fdb4e336e5df31362b2fb",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/low-cinematic-cold-preview.webp",
+      "sha256": "6e740e794617a60658c201d57a2263df6620a12aa09fffd7a0587fba890b7dc0",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-default-clean.webp",
+      "sha256": "8fd53cd18bbf26d840fac0cd157896af188591f46ad227d065b1b8832489409b",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-default-clean-preview.webp",
+      "sha256": "f50ce75014649434fcce758fcd3cb9a928dd22848f76dfbd62bc21d0294080ed",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-default-cooler.webp",
+      "sha256": "1e4d1866a15ccbb4f2bebb0a94a9a5c605fdb183c4fd0d5c6ad9edbf778f8131",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-default-cooler-preview.webp",
+      "sha256": "bb17d61a7b214a8f57ff7b292311fc25b00239d9423928e3400116d6ef902280",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-default-cold.webp",
+      "sha256": "e19ab9f3c3c01dbb2c35bf1a3c6238f5a4c75ba163ff5ee8cd5bc8d5c2c2cc26",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-default-cold-preview.webp",
+      "sha256": "0f5c2881531b5fb619d538fcb958d0eb66d58f28b6b16e268718a3e9ae2b32fd",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-natural-clean.webp",
+      "sha256": "5ca14e057deb587d3e9df6abf555d8bd75cb278026cae59452078885fd29a411",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-natural-clean-preview.webp",
+      "sha256": "b0428bd15ce3d261a8b9489914232f9c5aed4e30dae5ddf3ac06decb2fc5efa9",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-natural-cooler.webp",
+      "sha256": "bfd603109256d29c2738c91995d1cb13a1bdabe636a1044d502e9d9ee6899fe9",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-natural-cooler-preview.webp",
+      "sha256": "65581efbc7932c6f6d45dff45ee5b7444cc15a9aa739098a092a4cdbbc3f2f0d",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-natural-cold.webp",
+      "sha256": "3f88bacd820674415cbc7669b415a40f591b96f44e2b623f9abd0f379b16df07",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-natural-cold-preview.webp",
+      "sha256": "a35d33758e969e7bc1dc2e4ab745e4cacbc941d8c5231316e411c7d2ea4c7f59",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-cinematic-clean.webp",
+      "sha256": "51ccbd585d1c45245c0a6ce6c35dffa230af25dd6240f51592185e8d1757e8bd",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-cinematic-clean-preview.webp",
+      "sha256": "b01f517dda17499b1f34cea35fc69fe71ea45570dc93d89268d6f9420ef80531",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-cinematic-cooler.webp",
+      "sha256": "7ae2ed20747412b04805b857d5d8156251f5da17458aa714c5391f9cc0a96e70",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-cinematic-cooler-preview.webp",
+      "sha256": "a42adb40a6813155320fd24a2382a37ff2ac0472a4659f23ab62b392e3be0f9a",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/medium-cinematic-cold.webp",
+      "sha256": "54fba50d526821f1b0f3b216c04071875a5a359fb9b296249e2615196e188a72",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/medium-cinematic-cold-preview.webp",
+      "sha256": "5b7e3324f9849e37f6f76fa1b71d0d32cd83c85362392a1030f97aba6838fc7b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-default-clean.webp",
+      "sha256": "44e5195fca4b0237540761ac3e44696e5735133d12b620f7bee398ea1f0afcf6",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-default-clean-preview.webp",
+      "sha256": "a4a45ee096b0149ce047e47a79b8d07177afb29f386c57a1bc821e47e8b9d90c",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-default-cooler.webp",
+      "sha256": "f104dd7b8cdcc3ac21bb565eabf50d3a399222a6f5f1c1f220131c57cff59039",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-default-cooler-preview.webp",
+      "sha256": "8dcc4eaf705206547677d13719ae393f3f6fa6d0516f124911cfe7c656987f1b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-default-cold.webp",
+      "sha256": "bab4f1db48eb3474ac3dd28c9e7aa7871c96ea18cf2c589f0d832af7fe418224",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-default-cold-preview.webp",
+      "sha256": "d4a6d47aebeb8b809b5ae9dde6c73b9ccd368323aa0d833fbb4bb163abea94fe",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-natural-clean.webp",
+      "sha256": "b74c50d762caf384a45a9988f244600a1946acf76abbaf96f64f7732673fd670",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-natural-clean-preview.webp",
+      "sha256": "2aa2ffd79e1af84e3943bb07e00aae106a6c7b34b740e554569420b345afbfc3",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-natural-cooler.webp",
+      "sha256": "8058076e72b9b5e3e61ca619ac11668d46d4227b46e81694cf93a2320b21f2ce",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-natural-cooler-preview.webp",
+      "sha256": "7a05119e0883759c298728fe33c0618853001ef681884ca3968ac798f24e113a",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-natural-cold.webp",
+      "sha256": "277394693a66ba9c16b842c3a4c3537f9c02140b6c02c211660f6f337b97c94d",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-natural-cold-preview.webp",
+      "sha256": "858d9264705f1849850ee5ab07b5a579840fe54207823125e6a657ccd9b19b2b",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-cinematic-clean.webp",
+      "sha256": "3a2e229723ab06fcf6fa210373feffec1be2626be1e08132d4d3e37ad5752085",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-cinematic-clean-preview.webp",
+      "sha256": "57e39c3d08ed37f95e9123a852823fe6275ca43ce76f6425a82ad2d8dc5db870",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-cinematic-cooler.webp",
+      "sha256": "38cefa7d457efb068117adfbc09ecef5548415d2144d71fb0bef95d5cfc56969",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-cinematic-cooler-preview.webp",
+      "sha256": "10ebbe8fff5e48b7c7c829a1b3723bf5dbf72efd4970730601d2b73682267262",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/high-cinematic-cold.webp",
+      "sha256": "36b5a5da2a81ba31d25f86ae713df724ed7a4cc3441e38231a3c9af332628e9e",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/high-cinematic-cold-preview.webp",
+      "sha256": "9496a91d127c26a3dd6cedf1b6f1da56d6cd3ad9b52e576cf60d0706ea7188f0",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-default-clean.webp",
+      "sha256": "77a3ae11fcd48c5cee67fa443a5fc1304c6f49a7a8c6770abd3cef377c4e7dc3",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-default-clean-preview.webp",
+      "sha256": "6295d7bc5c00ff38f3fa4ef68b2e1d262798a2ea8dd7a811262868f5caba3cd0",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-default-cooler.webp",
+      "sha256": "3673ffc146a45bc83ccd3730c11f3917e0d9d209e0269d1f1db014333992993f",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-default-cooler-preview.webp",
+      "sha256": "7acfd93fb5d7efe009bf487b748a2159a976cda6eff30efc3c08fb11ed4eb1ed",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-default-cold.webp",
+      "sha256": "d66b259964ba7fe48c5d1c773c6d986d2c0116d6faf3f1ce1a427f37fb910112",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-default-cold-preview.webp",
+      "sha256": "952a42eec6322af5d6fca7b2030d430c9b661a9a74f219f83ebba5aa4d023829",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-natural-clean.webp",
+      "sha256": "d4c780eb146d5c4d82519f670a259eaa552bbf5354864ffe33f3cb0773827c60",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-natural-clean-preview.webp",
+      "sha256": "451e02fb8cd2c21b36bbead5c46b38b31b96f04a8fc248fbc99ee075fea5cb64",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-natural-cooler.webp",
+      "sha256": "af78633fa839aa2182ee9faf6203ea94ceb8c4ec069ec6134159545f3dacd238",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-natural-cooler-preview.webp",
+      "sha256": "a0991989ffe7b883579e9381e8f931ebac56896169c299de509a1f412e049597",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-natural-cold.webp",
+      "sha256": "4c7fef1eab7ef4f713a6a2cf7e6a83bfa3fda4ab5e608eb78b023d2ad2c0ecd0",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-natural-cold-preview.webp",
+      "sha256": "ae8fc3779faf5f2f5196fc5c40fa09b4f94b89aa747b11c28e40146376cc0648",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-cinematic-clean.webp",
+      "sha256": "280db797a89bc5cdab361fe712af8a1bd78afd8a2527910b6bdad93d48851181",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-cinematic-clean-preview.webp",
+      "sha256": "bf3f6ff939101d8047a962fc59984e31dfccbf6b77dd81d37fda49a21fceaf35",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-cinematic-cooler.webp",
+      "sha256": "93957ddad90b9ca9648535c117931cfc7e934a80ea34a1bf0eb08f85051f624d",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-cinematic-cooler-preview.webp",
+      "sha256": "f85b4f1d7e48b0cfa4886748269a0c082547409a1e166efa8ec9502a0569d838",
+      "encoding": "lossless WebP",
+      "kind": "preview"
+    },
+    {
+      "file": "gallery/cab/ultra-cinematic-cold.webp",
+      "sha256": "69fd076c2a7ace77903666dcd9b3d301c9bfd04d11205914a50606e3ca1bb84c",
+      "encoding": "lossless WebP",
+      "kind": "native"
+    },
+    {
+      "file": "gallery/cab/ultra-cinematic-cold-preview.webp",
+      "sha256": "44ba96faed5a992fa7f4cb4d7dbd5a60ed4b987c09ea4ae548747c84376737a6",
+      "encoding": "lossless WebP",
+      "kind": "preview"
     }
-  ]
+  ],
+  "runs": [
+    {
+      "scene": "exterior",
+      "quality": "low",
+      "style": "default",
+      "neural_eye": [
+        744,
+        744
+      ],
+      "result_sha256": "152dc4f32e99b1f6990f351028eeecd9a03fefa8b784d1b2f5a0cb585a6a3f3b",
+      "retained_frame": 127,
+      "retained_frame_variation_mae_255": [
+        0.02748033914966822,
+        0.026854545547636603,
+        0.028382767059883674
+      ],
+      "edit_mae_255": 1.3613666594986482,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "low",
+      "style": "natural",
+      "neural_eye": [
+        744,
+        744
+      ],
+      "result_sha256": "3895679e27308c8ca255f57cf31c26e0d505edaa099a3214e8bc6d78867ac134",
+      "retained_frame": 149,
+      "retained_frame_variation_mae_255": [
+        0.020420506676497092,
+        0.018326242115179813,
+        0.019265559719832882
+      ],
+      "edit_mae_255": 2.2346150006144017,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "low",
+      "style": "cinematic",
+      "neural_eye": [
+        744,
+        744
+      ],
+      "result_sha256": "cc8644e5d125efb4d63323a8c08f9dcfaef4915873e1517a4b55446ebfda959c",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.023673942205292047,
+        0.022470380724174652,
+        0.023027975751617923
+      ],
+      "edit_mae_255": 1.2697010936347997,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "medium",
+      "style": "default",
+      "neural_eye": [
+        1216,
+        1216
+      ],
+      "result_sha256": "452316f242cba63f7afd974e2a6daf852f5630ea45acd30f1d0e51d34c60d72a",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.035521678135496025,
+        0.035725249856639635,
+        0.031270940853608584
+      ],
+      "edit_mae_255": 2.324848550012288,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "medium",
+      "style": "natural",
+      "neural_eye": [
+        1216,
+        1216
+      ],
+      "result_sha256": "45bf78fd1ca00e207b8f827b91611bbec44df62a3aa11356b1a448c4e12d73cc",
+      "retained_frame": 139,
+      "retained_frame_variation_mae_255": [
+        0.028573692348652414,
+        0.02936350557057426,
+        0.029700402433030227
+      ],
+      "edit_mae_255": 3.456336528221512,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "medium",
+      "style": "cinematic",
+      "neural_eye": [
+        1216,
+        1216
+      ],
+      "result_sha256": "cc08e3a338a5eccdf824e41d91e24100c5c4b118d169dcdd7f73903ae9b03800",
+      "retained_frame": 131,
+      "retained_frame_variation_mae_255": [
+        0.03313928483656918,
+        0.03257915540263783,
+        0.03296533239125092
+      ],
+      "edit_mae_255": 2.1336601181699026,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "high",
+      "style": "default",
+      "neural_eye": [
+        1800,
+        1800
+      ],
+      "result_sha256": "810538bea60ac3e093acf9968c1daa0fdf4c3754aba8a153c7264a33e6cff1f7",
+      "retained_frame": 131,
+      "retained_frame_variation_mae_255": [
+        0.048310139673957565,
+        0.0477745607028754,
+        0.04876018882608339
+      ],
+      "edit_mae_255": 7.63223980093389,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "high",
+      "style": "natural",
+      "neural_eye": [
+        1800,
+        1800
+      ],
+      "result_sha256": "93665805f55aab2cd23ddd3c1620da3c3a849c16c21fd1f5721eb5ad98adcfad",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.04338437986401245,
+        0.04504899852543622,
+        0.04721919288113378
+      ],
+      "edit_mae_255": 8.643391599082493,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "high",
+      "style": "cinematic",
+      "neural_eye": [
+        1800,
+        1800
+      ],
+      "result_sha256": "fc92959e1270c89270d550093cb800df291bb019dc491e11cc7fb0ee9456a084",
+      "retained_frame": 131,
+      "retained_frame_variation_mae_255": [
+        0.05103242504300811,
+        0.04883693782256083,
+        0.04702811399197182
+      ],
+      "edit_mae_255": 4.930467943597936,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "ultra",
+      "style": "default",
+      "neural_eye": [
+        2504,
+        2600
+      ],
+      "result_sha256": "70cbf7de04bf4086710926941726712cfb01176494aae2dc3c04a0bd61ee5b79",
+      "retained_frame": 127,
+      "retained_frame_variation_mae_255": [
+        0.09059146391414762,
+        0.0886829022282297,
+        0.08858851478659785
+      ],
+      "edit_mae_255": 12.60849599614975,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "ultra",
+      "style": "natural",
+      "neural_eye": [
+        2504,
+        2600
+      ],
+      "result_sha256": "d32e9e27876d689066c59c0d92a39584eaa00ba4b6fa893514ee8404e8099bc2",
+      "retained_frame": 126,
+      "retained_frame_variation_mae_255": [
+        0.07361419165233063,
+        0.07405558798230523,
+        0.07413594658802326
+      ],
+      "edit_mae_255": 14.785582555091342,
+      "verified": true
+    },
+    {
+      "scene": "exterior",
+      "quality": "ultra",
+      "style": "cinematic",
+      "neural_eye": [
+        2504,
+        2600
+      ],
+      "result_sha256": "b76e60306fb4a91447c818f6bd50dc0c0811498b94af8a234a38f9de3deb6363",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.09204406283280085,
+        0.09128962890144998,
+        0.09138488674531006
+      ],
+      "edit_mae_255": 7.742529004874252,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "low",
+      "style": "default",
+      "neural_eye": [
+        744,
+        744
+      ],
+      "result_sha256": "cd7da44a305519003cb37053309794a2b2f3b58335977751e1edf3beff4748f3",
+      "retained_frame": 127,
+      "retained_frame_variation_mae_255": [
+        0.029202762759072663,
+        0.0317587757024658,
+        0.028781104079626443
+      ],
+      "edit_mae_255": 2.2135716955435405,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "low",
+      "style": "natural",
+      "neural_eye": [
+        744,
+        744
+      ],
+      "result_sha256": "ba30ce7f3fb2a9de4ff0f65952854bf54f4f709e93f2c87d1697479010108c44",
+      "retained_frame": 130,
+      "retained_frame_variation_mae_255": [
+        0.02354350987138527,
+        0.021688708323093307,
+        0.022393734127959367
+      ],
+      "edit_mae_255": 3.1691392745965428,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "low",
+      "style": "cinematic",
+      "neural_eye": [
+        744,
+        744
+      ],
+      "result_sha256": "380e9c8e9a9d739404bec3ecf298f082940ea464848fab2d97886ced1ec8012c",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.02580048844925043,
+        0.02663666338985828,
+        0.0271649207421971
+      ],
+      "edit_mae_255": 2.1958046100598017,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "medium",
+      "style": "default",
+      "neural_eye": [
+        1216,
+        1216
+      ],
+      "result_sha256": "a0f7ba22c98713db0e992c7612d84ab4cc5b5c848273a5d5b9d37f088d542d05",
+      "retained_frame": 131,
+      "retained_frame_variation_mae_255": [
+        0.030954575243712625,
+        0.02841179753420169,
+        0.028687817440812648
+      ],
+      "edit_mae_255": 2.2754459275415746,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "medium",
+      "style": "natural",
+      "neural_eye": [
+        1216,
+        1216
+      ],
+      "result_sha256": "461702cac5bee97c2f6f96246d1c00465bed9ac63aba8b6a5602c8ca35d2d6b3",
+      "retained_frame": 127,
+      "retained_frame_variation_mae_255": [
+        0.03734007639059556,
+        0.03854535307610388,
+        0.03732230994511346
+      ],
+      "edit_mae_255": 5.3626552643974765,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "medium",
+      "style": "cinematic",
+      "neural_eye": [
+        1216,
+        1216
+      ],
+      "result_sha256": "dfa69bc8bbbd14ba712c60e6cc91ad429c81744dac93e34f7120c9db351762b3",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.03331067727533382,
+        0.0332568659375768,
+        0.04101773060539035
+      ],
+      "edit_mae_255": 3.071772727738183,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "high",
+      "style": "default",
+      "neural_eye": [
+        1800,
+        1800
+      ],
+      "result_sha256": "aa3e3359410263cc092dd978dd3100d3ef1215116ebfb3271cb1e0f82b1ba724",
+      "retained_frame": 133,
+      "retained_frame_variation_mae_255": [
+        0.04088192225772098,
+        0.0401092866797739,
+        0.04006940177766855
+      ],
+      "edit_mae_255": 5.1065060006553615,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "high",
+      "style": "natural",
+      "neural_eye": [
+        1800,
+        1800
+      ],
+      "result_sha256": "867054aa3d42804253ae9339f5139ba42694548d69a8ca584e7515787412c538",
+      "retained_frame": 143,
+      "retained_frame_variation_mae_255": [
+        0.05506932497747194,
+        0.05347666810027034,
+        0.05384594904562956
+      ],
+      "edit_mae_255": 11.149362276767429,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "high",
+      "style": "cinematic",
+      "neural_eye": [
+        1800,
+        1800
+      ],
+      "result_sha256": "9599b805f87d7e2ee385eef6f294678c95d8b8a52d1a03b484be80100fbb94bb",
+      "retained_frame": 129,
+      "retained_frame_variation_mae_255": [
+        0.047301753092487915,
+        0.04550936450397313,
+        0.046936414557221265
+      ],
+      "edit_mae_255": 6.209379454411403,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "ultra",
+      "style": "default",
+      "neural_eye": [
+        2504,
+        2600
+      ],
+      "result_sha256": "b173d3270c3bedcb3a0ca52870229085e9560fa0a2991458266aedc490217df5",
+      "retained_frame": 126,
+      "retained_frame_variation_mae_255": [
+        0.0795777269189809,
+        0.07672936122716474,
+        0.07746103670025395
+      ],
+      "edit_mae_255": 8.84280223437372,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "ultra",
+      "style": "natural",
+      "neural_eye": [
+        2504,
+        2600
+      ],
+      "result_sha256": "4f507e1f89396a7f1fd47fb6083272cc0a9d0e1b4f472fe3c22d53457d65140a",
+      "retained_frame": 125,
+      "retained_frame_variation_mae_255": [
+        0.09843747439993446,
+        0.09888893155566478,
+        0.09571111862046366
+      ],
+      "edit_mae_255": 16.566080271565497,
+      "verified": true
+    },
+    {
+      "scene": "cab",
+      "quality": "ultra",
+      "style": "cinematic",
+      "neural_eye": [
+        2504,
+        2600
+      ],
+      "result_sha256": "67d1225486b8b7856576f92784ff13be2174c74bf82ecbb273a09c154f92a69a",
+      "retained_frame": 128,
+      "retained_frame_variation_mae_255": [
+        0.08703556361104284,
+        0.08642543724911936,
+        0.08880493774064062
+      ],
+      "edit_mae_255": 10.12273582780372,
+      "verified": true
+    }
+  ],
+  "scenes": {
+    "exterior": {
+      "source_frame": 3173,
+      "input_sha256": {
+        "original": "cbff2442ef17f730e79629d08f4f0b427e03f570411cc8786272d8ba322ca01d",
+        "depth": "2e41b77d912cd03198029edd9b2e679b5025dbbfb0ffdf6668f562e8d3952595",
+        "motion": "b87d975381586acf87ddc1734331dc8c58cf70c2d60bf59f4a5c9b9ec4f148b3",
+        "mask": "fa66b9e58c562b79f76a33fd933006dc92678a90def6cae46823c8b99f6824c7"
+      },
+      "packet_sha256": "d16d339e379ba1f1a9271725a3857c38af4a3fc786291d875df93268bc3a3560"
+    },
+    "cab": {
+      "source_frame": 5516,
+      "input_sha256": {
+        "original": "0693ccf9bc9b9b432ea3e7f11c8a1bacabe536a2c3f33cc53802473b39a02a99",
+        "depth": "b4ae5bb1d84fb4d23421a0e705c93fe592c050f09c877cf46a54a1f22091bef7",
+        "motion": "b87d975381586acf87ddc1734331dc8c58cf70c2d60bf59f4a5c9b9ec4f148b3",
+        "mask": "3c74afa2f2baea8e658256fd609344bab1a9b56a97b820d3abcca20bf3d3b6f3"
+      },
+      "packet_sha256": "f70cd654309c40652d75df05c72f4e4f11986352108436712a36c1136e88be24"
+    }
+  }
 }

@@ -1,11 +1,7 @@
-# Comparison showcase
+# Comparison page
 
-This directory contains the complete static comparison page for GitHub Pages. HTML, scripts, styles, images and provenance live in this repository. No account, API key or external image host is required to view it.
+Edit the HTML, CSS and JavaScript in `site`. Run `python tools/build-site.py` to copy those files into `docs`; all image assets live only in `docs/assets`.
 
-The public project URL is `https://einareb.github.io/ETS2-DLSS-5-VR-Preview/` once Pages is enabled. Repository Settings → Pages → Build and deployment → Source must be **Deploy from a branch**, using **main** and **/docs**.
+Preview with `python -m http.server --directory docs`, then run `python tools/check-comparison-site.py` before publishing. GitHub Pages serves `main` / `docs` at https://einareb.github.io/ETS2-DLSS-5-VR-Preview/.
 
-The `docs` directory contains a publication copy of these static files alongside the developer documentation. To publish an update, copy the files from `site` into `docs` without removing the existing developer documentation, validate both copies, then commit the changes to `main`. GitHub's managed Pages build publishes ordinary branch updates; no custom workflow with repository-write permission is used.
-
-Run `python tools/check-comparison-site.py` from the repository root before publishing. For local use, serve this directory with a static HTTP server; opening index.html directly as a file does not allow the comparison manifest to load in some browsers.
-
-The current Medium images are paired original/result exports from real in-game VR captures. Low, High and Ultra controls accurately say their same-input comparisons are awaiting processing. When the static replay matrix is verified, update the manifest, method labels and image hashes together; do not label those future replay images as physical headset captures.
+The gallery contains two captured inputs processed through four qualities, three neural styles and three color looks. Its manifest and provenance must be updated together. These are static replays of real inputs, not recordings of moving headset gameplay. Full-size exports are lossless at native resolution; the grid uses smaller lossless previews.

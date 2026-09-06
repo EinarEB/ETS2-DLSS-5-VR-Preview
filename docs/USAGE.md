@@ -25,7 +25,7 @@ Set **style, intensity and model preset** in the launcher while the game is clos
 - **VR color look:** optional grading after neural rendering. Change it in **Home → Add-ons → DLSS 5 Feed**. The Home tab's preset selector on the monitor controls desktop shaders.
 - **Final effect blend:** mixes the original image and neural output. It can change live.
 
-**Scroll Lock** temporarily switches the neural blend between 0% and 100%. You can choose Pause instead, or disable the shortcut. Neural processing continues and color grading remains applied, so the key compares appearance, not performance. Moving the blend slider ends the temporary comparison.
+**Scroll Lock** temporarily switches the neural blend between 0% and 100%. Under **More options → Compare key**, choose Pause instead or disable the shortcut. Neural processing continues and color grading remains applied, so the key compares appearance, not performance. Moving the blend slider ends the temporary comparison.
 
 ## Troubleshooting
 
@@ -43,9 +43,9 @@ Start with the preview's supplied graphics configuration. Extra graphics mods an
 
 ## Captures and reports
 
-Use **Capture comparison frames** in the launcher or **Home → Add-ons → DLSS 5 Feed → Record screenshots or motion**. Comparison captures save four stereo frames before color grading. **Save final VR image** includes the grading. Recording can briefly pause rendering and needs several GB of free space.
+Use **Capture comparison** in the launcher or **Home → Add-ons → DLSS 5 Feed → Record screenshots or motion**. Comparison captures save four stereo frames before color grading. **Save final VR image** includes the grading. Recording can briefly pause rendering and needs several GB of free space.
 
-For a bug report, choose **Save diagnostics** and attach `preview-diagnostics.json` to a GitHub issue with your GPU, driver, headset, runtime, preset and a short description. Review optional logs and images before sharing; they may contain personal paths or scene information.
+For a bug report, choose **More options → Save diagnostics** and attach `preview-diagnostics.json` to a GitHub issue with your GPU, driver, headset, runtime, preset and a short description. Review optional logs and images before sharing; they may contain personal paths or scene information.
 
 ## Return to your usual game
 
