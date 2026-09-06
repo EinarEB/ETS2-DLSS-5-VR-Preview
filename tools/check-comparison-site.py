@@ -33,4 +33,4 @@ for scene in comparisons['scenes'].values():
         if preset:names.extend([preset['image'],preset.get('image_full',preset['image'])])
     for name in names:
         assert name.startswith('assets/') and (root/name).is_file(),name
-print('Verified two scenes, eight full-resolution assets, preset references and local page links. No external image host is required.')
+print('Verified two scenes, four lossless full-resolution images, preset references and local page links. No external image host is required.')

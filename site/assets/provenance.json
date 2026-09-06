@@ -6,110 +6,6 @@
   "gpu_replay_status": "Pending user availability",
   "images": [
     {
-      "file": "cab-original.png",
-      "sha256": "3b05759419e79769c1ba1f3160b1a524b2f595b9135fa07878c8b8f97d0eee6c",
-      "source_raw_sha256": "0693ccf9bc9b9b432ea3e7f11c8a1bacabe536a2c3f33cc53802473b39a02a99",
-      "source_capture": "20260906-170821-31904-158718703",
-      "source_frame": 5516,
-      "source_kind": "original",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true
-    },
-    {
-      "file": "cab-medium.png",
-      "sha256": "921b62e3c6f7a01a059571bc72fb8279299a1b1059e2a95de7370a45f4286e9e",
-      "source_raw_sha256": "dabff0d6a3b0899177d18dace1d40f3e389928faaecc421e46e76b1063fcde92",
-      "source_capture": "20260906-170821-31904-158718703",
-      "source_frame": 5516,
-      "source_kind": "result",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true
-    },
-    {
-      "file": "exterior-original.png",
-      "sha256": "b6375b11161ce605d65294178efe409421509b7c94b35158304d4c98e1931e5a",
-      "source_raw_sha256": "f3263b3a3df20fa3991cb559a4c54c94e6dff23955bf8ffeffc70ae32bfd7d53",
-      "source_capture": "20260906-170900-31904-158758093",
-      "source_frame": 6914,
-      "source_kind": "original",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true
-    },
-    {
-      "file": "exterior-medium.png",
-      "sha256": "5c7b098dc7d473fd96eeeff67a62c6a9454390e0daf3b3d682ccaeabd482ff0f",
-      "source_raw_sha256": "5972b972d737117d3452b74cfad682895d4d6c1ef1fbda7c8fe02bbc94d645cc",
-      "source_capture": "20260906-170900-31904-158758093",
-      "source_frame": 6914,
-      "source_kind": "result",
-      "source_build": "0.13.1-beta.1-ets2-stereo.18-quality-preview1",
-      "width": 2504,
-      "height": 2600,
-      "eye": 0,
-      "quality": "Medium",
-      "passes": 1,
-      "work_percent": 65,
-      "crop_percent": 75,
-      "neural_dimensions": [
-        1216,
-        1216
-      ],
-      "style": "Natural",
-      "model_preset": 1,
-      "intensity": 2,
-      "structure": 0.5,
-      "blend": 1,
-      "stability_history_used": true
-    },
-    {
       "file": "cab-original.webp",
       "sha256": "a23400fc9eef3d1a5b364bebb93e6da27d6f7da7235cf70cb3fe2fa7e7fce1d8",
       "source_raw_sha256": "0693ccf9bc9b9b432ea3e7f11c8a1bacabe536a2c3f33cc53802473b39a02a99",
@@ -134,7 +30,8 @@
       "structure": 0.5,
       "blend": 1,
       "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly"
+      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
+      "archived_png_sha256": "3b05759419e79769c1ba1f3160b1a524b2f595b9135fa07878c8b8f97d0eee6c"
     },
     {
       "file": "cab-medium.webp",
@@ -161,7 +58,8 @@
       "structure": 0.5,
       "blend": 1,
       "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly"
+      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
+      "archived_png_sha256": "921b62e3c6f7a01a059571bc72fb8279299a1b1059e2a95de7370a45f4286e9e"
     },
     {
       "file": "exterior-original.webp",
@@ -188,7 +86,8 @@
       "structure": 0.5,
       "blend": 1,
       "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly"
+      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
+      "archived_png_sha256": "b6375b11161ce605d65294178efe409421509b7c94b35158304d4c98e1931e5a"
     },
     {
       "file": "exterior-medium.webp",
@@ -215,7 +114,8 @@
       "structure": 0.5,
       "blend": 1,
       "stability_history_used": true,
-      "encoding": "lossless WebP; decoded RGB matches PNG exactly"
+      "encoding": "lossless WebP; decoded RGB matches PNG exactly",
+      "archived_png_sha256": "5c7b098dc7d473fd96eeeff67a62c6a9454390e0daf3b3d682ccaeabd482ff0f"
     }
   ]
 }
