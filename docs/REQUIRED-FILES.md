@@ -1,6 +1,14 @@
-# Exact required files
+# Required files and game compatibility
 
-Setup validates complete SHA-256 fingerprints, not just filenames or version labels. These fingerprints identify the private baseline and do not grant permission to distribute someone else's files.
+## Game compatibility
+
+The current installer accepts **ETS2 VR 1.60.1.1007** on Steam's **oculus** branch and checks the executable's exact fingerprint. A newer Steam update may need a matching preview release. If setup reports a different game version, stop there and check for an updated preview.
+
+**OpenXR and DirectX 11 are required.** The launcher selects OpenXR; the renderer processes the D3D11 eye images. Virtual Desktop users should select VDXR.
+
+## File fingerprints
+
+Setup checks file contents against the SHA-256 fingerprints below. Matching filenames or version labels alone are not enough.
 
 | Installed component | File version | Bytes | SHA-256 |
 | --- | --- | ---: | --- |

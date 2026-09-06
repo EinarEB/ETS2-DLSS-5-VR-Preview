@@ -11,7 +11,7 @@
         "low": null,
         "medium": {
           "image": "assets/cab-medium.webp",
-          "note": "Recorded in game on the earlier working build. Natural \u00b7 intensity 2 \u00b7 model preset 1 \u00b7 full neural blend.",
+          "note": "Recorded in game. Natural \u00b7 intensity 2 \u00b7 model preset 1 \u00b7 full neural blend.",
           "image_full": "assets/cab-medium.webp"
         },
         "high": null,
@@ -29,7 +29,7 @@
         "low": null,
         "medium": {
           "image": "assets/exterior-medium.webp",
-          "note": "Recorded in game on the earlier working build. Natural \u00b7 intensity 2 \u00b7 model preset 1 \u00b7 full neural blend.",
+          "note": "Recorded in game. Natural \u00b7 intensity 2 \u00b7 model preset 1 \u00b7 full neural blend.",
           "image_full": "assets/exterior-medium.webp"
         },
         "high": null,
