@@ -35,5 +35,9 @@ if not exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 )
 for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "PREVIEW_VS=%%i"
 if not defined PREVIEW_VS exit /b 1
+rem The developer command script may change the working directory when it is not
+rem started from a developer prompt; pin it so the relative paths below still work.
+set "VSCMD_START_DIR=%~dp0"
 call "%PREVIEW_VS%\VC\Auxiliary\Build\vcvars64.bat" >nul
+cd /d "%~dp0"
 exit /b %errorlevel%

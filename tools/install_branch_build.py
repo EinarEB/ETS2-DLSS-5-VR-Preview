@@ -10,8 +10,11 @@ Nothing else in the preview is touched: no game files, no third-party binaries,
 no saves. Close ETS2 and the launcher before running either direction.
 
   python tools/install_branch_build.py --preview E:\\ETS2-VR-Preview
-  python tools/install_branch_build.py --preview E:\\ETS2-VR-Preview --files ets2-stereo-depth.addon64 dlss5-feed.addon64
+  python tools/install_branch_build.py --preview E:\\ETS2-VR-Preview --files ets2-stereo-depth.addon64
   python tools/install_branch_build.py --preview E:\\ETS2-VR-Preview --restore
+
+By default both branch add-ons (depth route and feeder) are installed; the release
+feeder build is used, never the replay build.
 """
 from pathlib import Path
 import argparse, datetime, hashlib, json, shutil, sys
@@ -22,7 +25,7 @@ SOURCES = {
     'dlss5-feed.addon64': REPO / 'build' / 'feeder' / 'dlss5-feed.addon64',
     'ets2-monitor.addon64': REPO / 'build' / 'monitor' / 'ets2-monitor.addon64',
 }
-DEFAULT_FILES = ['ets2-stereo-depth.addon64']
+DEFAULT_FILES = ['ets2-stereo-depth.addon64', 'dlss5-feed.addon64']
 
 
 def sha(path):
@@ -89,8 +92,6 @@ def main():
     preview = Path(a.preview).resolve()
     if not (preview / 'preview.json').exists():
         raise SystemExit(f'{preview} has no preview.json')
-    if (preview / 'launcher.log').exists():
-        pass
     if a.restore:
         restore(preview)
     else:

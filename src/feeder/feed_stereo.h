@@ -19,7 +19,8 @@ static struct StereoState {
     unsigned eye_count = 2;
     bool copy_carrier = false;
     UINT width = 0, height = 0;
-    UINT crop_x = 0, crop_y = 0;
+    UINT crop_x = 0, crop_y = 0;     // centred square position (both eyes) before alignment
+    UINT crop_x_eye[2] = {0, 0};     // per-eye square x; equal to crop_x unless aligned on far content
     int crop_percent = 0;
     bool active = false;
     NVSDK_NGX_Handle *pending_feature[4] = {};
@@ -79,6 +80,7 @@ static void StereoRelease()
     g_stereo.active = false;
     g_stereo.width = g_stereo.height = 0;
     g_stereo.crop_x = g_stereo.crop_y = 0; g_stereo.crop_percent = 0;
+    g_stereo.crop_x_eye[0] = g_stereo.crop_x_eye[1] = 0;
 }
 
 static NVSDK_NGX_Result StereoCreateGuarded(NVSDK_NGX_Handle **handle, NVSDK_NGX_Parameter *params,
@@ -216,7 +218,19 @@ static bool StereoBuild(UINT width, UINT height, bool inverted, bool *crashed)
     }
     g_stereo.width=region.width;g_stereo.height=region.height;
     g_stereo.crop_x=region.x;g_stereo.crop_y=region.y;g_stereo.crop_percent=g_cfg.stereo_crop;
-    Log("[stereo-crop] active=%d%% full-eye=%ux%u region=%u,%u %ux%u; motion remains in work pixels; original periphery preserved",g_stereo.crop_percent,width/2,height,region.x,region.y,region.width,region.height);
+    g_stereo.crop_x_eye[0]=g_stereo.crop_x_eye[1]=region.x;
+    int shiftWork=0;
+    if(g_cfg.stereo_crop&&g_cfg.stereo_crop_align&&g_cfg.stereo_eye_shift&&g.backbuffer_width){
+        // The eye buffers are asymmetric frusta: far content sits shiftWork pixels further
+        // along x in the right eye. Move each square by half of that, within its eye, so the
+        // two squares cover the same distant content instead of the same screen position.
+        shiftWork=int(std::lround(double(g_cfg.stereo_eye_shift)*double(width/2)/double(g.backbuffer_width/2)));
+        const int maxX=int(width/2)-int(region.width);
+        const int left=std::clamp(int(region.x)-shiftWork/2,0,maxX);
+        const int right=std::clamp(int(region.x)+(shiftWork-shiftWork/2),0,maxX);
+        g_stereo.crop_x_eye[0]=UINT(left);g_stereo.crop_x_eye[1]=UINT(right);
+    }
+    Log("[stereo-crop] active=%d%% full-eye=%ux%u region=%u,%u %ux%u; squares left x=%u right x=%u (far-content shift %d work px); motion remains in work pixels; original periphery preserved",g_stereo.crop_percent,width/2,height,region.x,region.y,region.width,region.height,g_stereo.crop_x_eye[0],g_stereo.crop_x_eye[1],shiftWork);
     g_stereo.eye_count = 2 * static_cast<unsigned>(g_cfg.stereo_passes);
     g_stereo.copy_carrier = g_cfg.stereo_carrier_copy != 0;
     if(g_stereo.eye_count>2 && g.color_fmt!=g.output_fmt){
@@ -293,7 +307,7 @@ static NVSDK_NGX_Result StereoEvaluate(NVSDK_NGX_D3D12_DLSS_Eval_Params *full, D
             if(slot==SLOT_COLOR && eye>=2)continue;
             auto *tex = g_stereo.eye[eye].tex[slot];
             Barrier(tex, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-            StereoCopyRegion(tex, 0, 0, g.tex12[slot], (eye % 2) * (g.width/2)+g_stereo.crop_x, g_stereo.crop_y, g_stereo.width, g_stereo.height);
+            StereoCopyRegion(tex, 0, 0, g.tex12[slot], (eye % 2) * (g.width/2)+g_stereo.crop_x_eye[eye % 2], g_stereo.crop_y, g_stereo.width, g_stereo.height);
             Barrier(tex, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
         }
         Barrier(g.tex12[slot], D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -337,7 +351,7 @@ static NVSDK_NGX_Result StereoEvaluate(NVSDK_NGX_D3D12_DLSS_Eval_Params *full, D
         for (unsigned eye = 0; eye < 2; ++eye) {
             auto *output = g_stereo.eye[g_stereo.eye_count-2+eye].tex[SLOT_OUTPUT];
             Barrier(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
-            StereoCopyRegion(g.tex12[SLOT_OUTPUT], eye * (g.width/2)+g_stereo.crop_x, g_stereo.crop_y, output, 0, 0, g_stereo.width, g_stereo.height);
+            StereoCopyRegion(g.tex12[SLOT_OUTPUT], eye * (g.width/2)+g_stereo.crop_x_eye[eye], g_stereo.crop_y, output, 0, 0, g_stereo.width, g_stereo.height);
             Barrier(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         }
         Barrier(g.tex12[SLOT_OUTPUT], D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);

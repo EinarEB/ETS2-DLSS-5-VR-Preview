@@ -102,3 +102,49 @@ The model is close to deterministic on a frozen input, so any flicker measured o
 3. Read the 600-frame windows in `dlss5-feed.log` (frame interval) and the MATCH lines in `depth-match.log` (`window_mean_ms`, totals) for each pass. Baseline: 29.7 ms interval in clean windows, 14.3 ms median depth wait.
 4. What to look for: nothing should change visually. Report any single-frame flash of wrong depth of field in the neural edit, and whether the occasional history reset pop after a hitch is gone.
 5. `python tools\install_branch_build.py --preview E:\ETS2-VR-Preview --restore` puts the release add-on back.
+
+## 2026-09-07 — Milestone 2: band-split stability, eye matching and aligned squares
+
+**Commit:** see `git log` for "Milestone 2". Files: `src/feeder/feed_stability.h` (rewritten), `feed_residual_composite.h`, `feed_residual.h`, `feed_stereo.h`, `dlss5-feed.cpp` (configuration keys, overlay, capture metadata, replay input selection), `build-replay.cmd`, `tools/make_pan_sequence.py`, `tools/replay_branch.py`, `tools/sequence_metrics.py`, `tools/install_branch_build.py`, `docs/BUILD.md`. Installer, launcher, site and third-party binaries untouched.
+
+### What changed
+
+- **Band split.** The stability filter now runs four compute passes. The first reduces the residual to 8×8 work-pixel cells (mean residual, mean motion, nearest depth, and whether the cell lies inside its eye's processed square). The second filters that low band with its own history weight (`stereo_stability_low`, default 0.8), gated by the same 2 % depth agreement and by coverage, with no neighbourhood clamp. The third averages the low band with the other eye on cells where both eyes processed the same distant content (`stereo_cross_eye`, default 0.5). The fourth subtracts the low band from the residual and filters the remainder exactly as the previous filter did (`stereo_stability`, the tight clamp), then adds the filtered low band back. `stereo_band_split=0` restores the previous filter with the same arithmetic.
+- **Eye offset and aligned squares.** `stereo_eye_shift` is the far-content offset between the eyes in native pixels (about −608 on the tested headset; `tools/sequence_metrics.py` prints it for any capture). It drives the cross-eye match and, with `stereo_crop_align=1` (restart), moves each eye's square by half of it so both squares cover the same distant content: at Medium the left square moves from x 205 to 402 and the right from 205 to 7 work pixels. The composite feathers each eye against its own square. The default offset is 0, which leaves cross-eye matching and alignment off until the value is set.
+- **Harness.** `build-replay.cmd` builds the fixture feeder with both replay inputs compiled in; the environment selects packet or sequence. `tools/make_pan_sequence.py` turns one recorded frame into a consecutive sequence with a constant pan, and optionally vector noise in 32 px blocks, dropped and masked vector blocks, a brightness ramp or an alternating brightness flicker. `tools/replay_branch.py --sequence` replays such a sequence and requests the burst once a given number of frames were delivered.
+
+### Numbers (headless fixture, cab scene, Medium · Natural, values out of 255)
+
+| Test | Previous filter | Band split | Band split, eye offset −608 |
+| --- | --- | --- | --- |
+| Static frame, effect total / low / high | 7.43 / 7.13 / 1.21 | 7.41 / 7.10 / 1.21 | 7.54 / 7.22 / 1.25 |
+| Static frame, binocular low-band difference, aligned (relative) | 4.78 (0.38) | 4.77 (0.38) | 0.47 (0.04) |
+| Static frame, square fraction without a counterpart in the other eye | 0.33 | 0.33 | 0.00 |
+| Pan 6 px per frame with exact vectors, flicker low / high | 0.15 / 0.29 | 0.16 / 0.31 | 0.17 / 0.33 |
+| Pan, binocular aligned | 4.61 | 4.65 | 0.64 |
+| Stress: 1.5 px vector noise, 5 % dropped blocks, 8 % brightness ramp, flicker low / high | 0.35 / 0.63 | 0.34 / 0.62 | 0.34 / 0.63 |
+| Stress, binocular aligned | 4.63 | 4.65 | 0.73 |
+| Alternating brightness ±3 % on a static frame, flicker low / high | 1.50 / 0.35 | 0.36 / 0.27 | not run |
+| Alternating brightness, effect total | 7.31 | 6.96 | not run |
+| Filter GPU time per frame, median (p95) | 0.28 (0.29) ms | 0.41 (0.42) ms | 0.41 ms |
+
+- With exact vectors the model itself is temporally stable (0.15 / 0.29 against a 0.03 / 0.08 floor on a frozen frame), so no filter setting changes that case. Real-game flicker therefore comes from vector error, lighting change and history resets, which is what milestone 4 addresses.
+- The stress case adds vector noise, which lands in the high band, and a linear brightness ramp, which an exponential average follows at the same slope; neither is a mode this filter can reduce, and the numbers say so. The alternating-brightness case isolates the mode the review predicted the old clamp passes: a region-wide tone step. There the low band improves four-fold and the high band also improves, at a 5 % cost in effect magnitude from averaging an alternating signal.
+- Aligning the squares removes the third of each square that had no processed counterpart, and the cross-eye match brings the low-band eye difference from 4.8 to 0.5, about a twentieth of the edit, without reducing the edit.
+- The filter costs 0.13 ms more than before at Medium.
+
+### Not verified offline
+
+- Any of this on real driving bursts; the synthetic sequences have no parallax, no moving objects and no depth-route dropouts.
+- Whether the cross-eye match shows a seam where cab meets world, or at the square edges, in the headset.
+- Whether the stereo-centred squares feel right. The processed region now sits about 200 work pixels further right in the left eye and further left in the right eye than before, so each eye's square is no longer centred on that eye's screen.
+- Tone lag. A 0.8 low-band history means a tone change settles over roughly five frames; a step into shadow may read as a short fade.
+- The eye offset on other headsets and resolutions; the value is per setup and the tool prints it.
+
+### Headset test
+
+1. Close ETS2 and the launcher, then `python tools\install_branch_build.py --preview E:\ETS2-VR-Preview` (installs both add-ons and records their hashes; `--restore` reverts).
+2. In `E:\ETS2-VR-Preview\dlss5-feed.cfg` set `stereo_eye_shift=-608`, or set "Eye offset of far content" in the Add-ons tab. Start VR. The square alignment needs this first start; the other keys are live.
+3. Drive the reference road with the defaults, then flip `stereo_band_split` between 1 and 0 and `stereo_cross_eye` between 50 % and 0 % from the Add-ons tab while driving.
+4. Look for: less eye-to-eye tone mismatch on distant scenery, any seam at the cab edge or square edge, a short fade when entering or leaving shade, and whether the new square position is acceptable. Report the frame interval from the 600-frame windows too; the filter should cost about 0.1 ms more.
+5. Then record the four bursts listed under milestone 0 with these settings, so milestones 3 and 4 have real inputs.

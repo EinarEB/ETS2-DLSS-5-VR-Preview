@@ -148,14 +148,15 @@ def shifted_pair(a_l, a_r, dx, dy):
     return a_l[ys, xs], a_r[ys2, xs2]
 
 
-def crop_rect(meta, ew, h):
-    """Processed square in native per-eye pixels (x0, y0, x1, y1)."""
+def crop_rect(meta, ew, h, eye=0):
+    """Processed square of one eye in native per-eye pixels (x0, y0, x1, y1)."""
     ww, wh = meta.get('work_width'), meta.get('work_height')
     if not ww or not wh or not meta.get('neural_eye_width'):
         return (0, 0, ew, h)
     sx = ew / (ww / 2.0); sy = h / float(wh)
-    x0 = int(round(meta['crop_x'] * sx)); y0 = int(round(meta['crop_y'] * sy))
-    x1 = int(round((meta['crop_x'] + meta['neural_eye_width']) * sx))
+    crop_x = meta.get('crop_x_left' if eye == 0 else 'crop_x_right', meta['crop_x'])
+    x0 = int(round(crop_x * sx)); y0 = int(round(meta['crop_y'] * sy))
+    x1 = int(round((crop_x + meta['neural_eye_width']) * sx))
     y1 = int(round((meta['crop_y'] + meta['neural_eye_height']) * sy))
     return (max(0, x0), max(0, y0), min(ew, x1), min(h, y1))
 
@@ -191,9 +192,10 @@ def analyze(folder, stride=2, cab_depth=0.5, margin=32):
         color = plane(folder, p, 'original'); output = plane(folder, p, 'result')
         motion = plane(folder, p, 'motion'); mask = plane(folder, p, 'mask'); depth = plane(folder, p, 'depth')
         reset = common_reset(p)
-        cx0, cy0, cx1, cy1 = crop_rect(meta, ew, h)
+        rects = [crop_rect(meta, ew, h, e) for e in (0, 1)]
         per_eye, colors, low8s, near8s, lum8s = [], [], [], [], []
         for eye in (0, 1):
+            cx0, cy0, cx1, cy1 = rects[eye]
             sl = slice(eye * ew, (eye + 1) * ew)
             c = np.asarray(color[:, sl, :3], np.float32); o = np.asarray(output[:, sl, :3], np.float32)
             r = o - c
@@ -248,19 +250,19 @@ def analyze(folder, stride=2, cab_depth=0.5, margin=32):
         dx, dy = shift['dx_cells'], shift['dy_cells']
         h8, w8 = low8s[0].shape[:2]
         y8, x8 = np.mgrid[0:h8, 0:w8]
-        square8 = (x8 * 8 >= cx0) & (x8 * 8 + 8 <= cx1) & (y8 * 8 >= cy0) & (y8 * 8 + 8 <= cy1)
+        squares8 = [(x8 * 8 >= r[0]) & (x8 * 8 + 8 <= r[2]) & (y8 * 8 >= r[1]) & (y8 * 8 + 8 <= r[3]) for r in rects]
         # aligned comparison: left cell (y, x) against right cell (y + dy, x + dx)
         l_low, r_low = shifted_pair(low8s[0], low8s[1], dx, dy)
-        l_sq, r_sq = shifted_pair(square8, square8, dx, dy)
+        l_sq, r_sq = shifted_pair(squares8[0], squares8[1], dx, dy)
         l_world, r_world = shifted_pair(world[0], world[1], dx, dy)
         both_squares = l_sq & r_sq
         included = both_squares & l_world & r_world
         diff = np.abs(l_low - r_low).mean(axis=-1)
         magnitude = 0.5 * (np.abs(l_low).mean(axis=-1) + np.abs(r_low).mean(axis=-1))
-        # unaligned reference and the part of each square without a processed counterpart
+        # unaligned reference and the part of the left square without a processed counterpart
         u_diff = np.abs(low8s[0] - low8s[1]).mean(axis=-1)
-        u_incl = square8 & world[0] & world[1]
-        unmatched = 1.0 - float(both_squares.sum() / max(1, square8.sum()))
+        u_incl = squares8[0] & squares8[1] & world[0] & world[1]
+        unmatched = 1.0 - float(both_squares.sum() / max(1, squares8[0].sum()))
         rows.append({'index': n, 'frame_id': p['frame_id'], 'eye': 'both', 'common_reset': reset,
                      'binocular_low': float(diff[included].mean()) if included.any() else None,
                      'binocular_low_relative': float(diff[included].mean() / (magnitude[included].mean() + 1e-6)) if included.any() else None,
@@ -288,7 +290,7 @@ def analyze(folder, stride=2, cab_depth=0.5, margin=32):
             lambda r: r['eye'] != 'both' and r['index'] > 0 and not r['common_reset'])
     return {'schema': 2, 'source': str(folder.resolve()), 'frames': len(frames), 'consecutive': consecutive,
             'native_extent': [w, h], 'stride': stride, 'cab_depth_threshold': cab_depth, 'eye_shift': shift,
-            'processed_square_native': list(crop_rect(frames[0]['metadata'], ew, h)),
+            'processed_square_native': [list(crop_rect(frames[0]['metadata'], ew, h, e)) for e in (0, 1)],
             'metadata_first_frame': {k: v for k, v in frames[0]['metadata'].items() if k not in ('observer', 'guide_uniforms')},
             'neural_settings': nr_settings(frames[0]), 'depth_percentiles_raw_first_frame': depth_percentiles,
             'units': '8-bit code values; pixels for motion; raw reversed-Z for depth; 1/8-resolution cells for eye shift', 'summary': summary, 'rows': rows}

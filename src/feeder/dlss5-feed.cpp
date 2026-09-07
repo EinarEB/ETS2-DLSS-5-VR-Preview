@@ -976,7 +976,12 @@ struct Cfg
     int stereo_float_color=0; // restart-only FP16 storage with explicit SDR semantics
     int stereo_crop=0; // restart-only:0 full-eye,40..100 square side as percent of shorter eye axis
     int preview_toggle_key=145; // Scroll Lock; 0 disables the focused-game comparison key
-    float stereo_stability=0; // 0 off; up to .9 residual-only temporal history weight
+    float stereo_stability=0; // 0 off; up to .9 residual-only temporal history weight (the high band when split)
+    float stereo_stability_low=0.8f; // history weight of the low (tone) band at 1/8 work resolution when the split is on
+    int stereo_band_split=1; // 1 = filter tone and detail bands separately and match eyes' tone; 0 = the previous single filter
+    float stereo_cross_eye=0.5f; // blend of matched far low-band cells toward the two eyes' mean; needs stereo_eye_shift
+    int stereo_eye_shift=0; // far-content offset, right eye minus left eye, native pixels (about -608 on the tested headset); 0 disables cross-eye and square alignment
+    int stereo_crop_align=1; // restart-only: place each eye's square so both cover the same far content (needs stereo_eye_shift)
 };
 
 static Cfg g_cfg = { 1, 2, -1, -1, -1, 0, 180, 0, 3, 60, 0, 100, 0, 0.3f, 2000, 1, 0, 0, 0, 0, 1.0f, 1.0f, 50, 1, 0, 0, 0, 0, 0, 0.5f, 0, 1, 1 };
@@ -1037,6 +1042,7 @@ static void CfgWriteDefault()
     fprintf(f,"stereo_carrier_copy=%d\nstereo_passes=%d\nstereo_controls=%d\nstereo_second_tone=%.3f\nstereo_float_color=%d\nstereo_stability=%.3f\n",g_cfg.stereo_carrier_copy,g_cfg.stereo_passes,g_cfg.stereo_controls,g_cfg.stereo_second_tone,g_cfg.stereo_float_color,g_cfg.stereo_stability);
     fprintf(f,"stereo_second_structure=%.3f\n",g_cfg.stereo_second_structure);
     fprintf(f,"stereo_crop=%d\npreview_toggle_key=%d\n",g_cfg.stereo_crop,g_cfg.preview_toggle_key);
+    fprintf(f,"stereo_stability_low=%.3f\nstereo_band_split=%d\nstereo_cross_eye=%.3f\nstereo_eye_shift=%d\nstereo_crop_align=%d\n",g_cfg.stereo_stability_low,g_cfg.stereo_band_split,g_cfg.stereo_cross_eye,g_cfg.stereo_eye_shift,g_cfg.stereo_crop_align);
     fclose(f);
     Log("[feed] wrote default config to %s", path);
 }
@@ -1098,6 +1104,11 @@ static bool CfgReload()
         else if (_stricmp(key, "stereo_crop") == 0 && (iv==0 || (iv>=40 && iv<=100))) next.stereo_crop=iv;
         else if (_stricmp(key, "preview_toggle_key") == 0 && (iv==0 || iv==145 || iv==19)) next.preview_toggle_key=iv;
         else if (_stricmp(key, "stereo_stability") == 0 && val>=0 && val<=.9f) next.stereo_stability=val;
+        else if (_stricmp(key, "stereo_stability_low") == 0 && val>=0 && val<=.95f) next.stereo_stability_low=val;
+        else if (_stricmp(key, "stereo_band_split") == 0 && (val==0 || val==1)) next.stereo_band_split=iv;
+        else if (_stricmp(key, "stereo_cross_eye") == 0 && val>=0 && val<=1) next.stereo_cross_eye=val;
+        else if (_stricmp(key, "stereo_eye_shift") == 0 && iv>=-4096 && iv<=4096) next.stereo_eye_shift=iv;
+        else if (_stricmp(key, "stereo_crop_align") == 0 && (val==0 || val==1)) next.stereo_crop_align=iv;
     }
     fclose(f);
     if (next.mode < 0 || next.mode > 2) next.mode = g_cfg.mode;
@@ -1144,6 +1155,7 @@ static const char *const kCfgSavedKeys[] = {
     "rebuild", "log_frames", "create_delay", "preset", "work_resolution", "work_upscale",
     "work_sharpness", "work_composite", "work_mix", "test_compare_hotkey", "gpu_timeout_ms", "buffer_home", "async_home", "sync_home",
     "mv_scale_x", "mv_scale_y", "stall_log_ms", "stereo_carrier_copy", "stereo_passes", "stereo_controls", "stereo_second_tone", "stereo_second_structure", "stereo_float_color", "stereo_stability", "stereo_crop", "preview_toggle_key",
+    "stereo_stability_low", "stereo_band_split", "stereo_cross_eye", "stereo_eye_shift", "stereo_crop_align",
 };
 
 static bool CfgKeyIsSaved(const char *key)
@@ -1206,6 +1218,7 @@ static void CfgSave()
     fprintf(f,"stereo_carrier_copy=%d\nstereo_passes=%d\nstereo_controls=%d\nstereo_second_tone=%.3f\nstereo_float_color=%d\nstereo_stability=%.3f\n",g_cfg.stereo_carrier_copy,g_cfg.stereo_passes,g_cfg.stereo_controls,g_cfg.stereo_second_tone,g_cfg.stereo_float_color,g_cfg.stereo_stability);
     fprintf(f,"stereo_second_structure=%.3f\n",g_cfg.stereo_second_structure);
     fprintf(f,"stereo_crop=%d\npreview_toggle_key=%d\n",g_cfg.stereo_crop,g_cfg.preview_toggle_key);
+    fprintf(f,"stereo_stability_low=%.3f\nstereo_band_split=%d\nstereo_cross_eye=%.3f\nstereo_eye_shift=%d\nstereo_crop_align=%d\n",g_cfg.stereo_stability_low,g_cfg.stereo_band_split,g_cfg.stereo_cross_eye,g_cfg.stereo_eye_shift,g_cfg.stereo_crop_align);
     if (!carried.empty()) fputs(carried.c_str(), f);
     fclose(f);
 }
@@ -6200,10 +6213,11 @@ static void FeedFrame11(reshade::api::effect_runtime *rt, reshade::api::command_
     if(ok&&g_stereo.active&&!g_stereo_launch_resolution)g_stereo_launch_resolution=work_percent;
 
 #ifdef ETS2_FEED_PACKET_REPLAY
-    if(ok){try{ets2_packet_replay::Apply(ctx,color,depth,mv,mask);}catch(const std::exception& e){Log("[packet-replay] rejected: %s",e.what());ok=false;}}
+    // One fixture binary can carry both replay inputs; the environment selects which one drives this run.
+    if(ok&&GetEnvironmentVariableW(L"ETS2_REPLAY_PACKET",nullptr,0)){try{ets2_packet_replay::Apply(ctx,color,depth,mv,mask);}catch(const std::exception& e){Log("[packet-replay] rejected: %s",e.what());ok=false;}}
 #endif
 #ifdef ETS2_FEED_SEQUENCE_REPLAY
-    if(ok){
+    if(ok&&GetEnvironmentVariableW(L"ETS2_REPLAY_SEQUENCE",nullptr,0)){
         try{bool sequenceReset=false;ok=ets2_sequence_replay::Apply(ctx,color,depth,mv,mask,sequenceReset);if(sequenceReset)g.need_reset=true;}
         catch(const std::exception& e){Log("[sequence-replay] rejected: %s",e.what());FeedDisable("the offline sequence input was rejected; synthetic host input will not be substituted");ok=false;}
     }
@@ -6215,7 +6229,7 @@ static void FeedFrame11(reshade::api::effect_runtime *rt, reshade::api::command_
         try{
             std::ostringstream meta;
             meta<<"{\"build\":\"" FEED_VERSION "\",\"source\":\"" ETS2_CAPTURE_SOURCE "\",\"capture_stage\":\"Feeder input and output, before any later ReShade effects\",\"work_width\":"<<g.width<<",\"work_height\":"<<g.height<<",\"work_percent\":"<<work_percent<<",\"saved_work_percent\":"<<g_cfg.work_resolution
-                <<",\"crop_percent\":"<<g_stereo.crop_percent<<",\"crop_x\":"<<g_stereo.crop_x<<",\"crop_y\":"<<g_stereo.crop_y<<",\"neural_eye_width\":"<<g_stereo.width<<",\"neural_eye_height\":"<<g_stereo.height<<",\"passes_per_eye\":"<<g_stereo.eye_count/2<<",\"preserve_game_color\":"<<(g_stereo.copy_carrier?"true":"false")
+                <<",\"crop_percent\":"<<g_stereo.crop_percent<<",\"crop_x\":"<<g_stereo.crop_x<<",\"crop_y\":"<<g_stereo.crop_y<<",\"crop_x_left\":"<<g_stereo.crop_x_eye[0]<<",\"crop_x_right\":"<<g_stereo.crop_x_eye[1]<<",\"eye_shift_native\":"<<g_cfg.stereo_eye_shift<<",\"band_split\":"<<(g_cfg.stereo_band_split?"true":"false")<<",\"stability_low\":"<<g_cfg.stereo_stability_low<<",\"cross_eye\":"<<g_cfg.stereo_cross_eye<<",\"neural_eye_width\":"<<g_stereo.width<<",\"neural_eye_height\":"<<g_stereo.height<<",\"passes_per_eye\":"<<g_stereo.eye_count/2<<",\"preserve_game_color\":"<<(g_stereo.copy_carrier?"true":"false")
                 <<",\"final_blend\":"<<g_frame_work_mix<<",\"depth_reversed\":"<<(g.depth_reversed?"true":"false")<<",\"reset\":"<<((g.need_reset||g_cfg.reset_every)?"true":"false")
                 <<",\"work_color_format\":"<<unsigned(g.color_fmt)<<",\"work_output_format\":"<<unsigned(g.output_fmt)<<",\"sdr_float_color\":"<<(g.stereo_sdr_float?"true":"false")<<",\"hdr\":"<<(g.hdr?"true":"false")<<",\"create_flags\":"<<g.create_flags
                 <<",\"motion_convention\":\"current_to_previous_pixels\",\"motion_scale_x\":"<<g_cfg.mv_scale_x<<",\"motion_scale_y\":"<<g_cfg.mv_scale_y
@@ -7164,6 +7178,22 @@ static void DrawOverlay(reshade::api::effect_runtime *rt)
         float stabilityPercent=g_cfg.stereo_stability*100;
         if(ImGui::SliderFloat("Neural flicker filter (%)",&stabilityPercent,0,90,"%.0f%%")){g_cfg.stereo_stability=stabilityPercent*.01f;dirty=true;}
         ImGui::TextWrapped("Optional: stabilizes only the neural edits using motion and depth. 0%% disables it. Higher values can leave trails; compare moving edges. The original game detail is preserved.");
+        bool split=g_cfg.stereo_band_split!=0;
+        if(ImGui::Checkbox("Filter tone and detail separately",&split)){g_cfg.stereo_band_split=split?1:0;dirty=true;}
+        ImGui::SameLine();HelpMarker("Splits the neural edit into a broad tone band (about 24 px) with its own longer history and no neighbourhood clamp, and a detail band that keeps the flicker filter above. Off restores the single filter.");
+        if(split){
+            float lowPercent=g_cfg.stereo_stability_low*100;
+            if(ImGui::SliderFloat("Tone band history (%)",&lowPercent,0,95,"%.0f%%")){g_cfg.stereo_stability_low=lowPercent*.01f;dirty=true;}
+            if(ImGui::InputInt("Eye offset of far content (px)",&g_cfg.stereo_eye_shift,8,64)){g_cfg.stereo_eye_shift=std::clamp(g_cfg.stereo_eye_shift,-4096,4096);dirty=true;}
+            ImGui::SameLine();HelpMarker("How far a distant object sits further left in the right eye than in the left eye, in native pixels (negative). tools/sequence_metrics.py prints it for a capture; about -608 on the tested Quest 3 setup. 0 disables the eye matching below and the square alignment.");
+            float crossPercent=g_cfg.stereo_cross_eye*100;
+            if(ImGui::SliderFloat("Match eyes' tone (%)",&crossPercent,0,100,"%.0f%%")){g_cfg.stereo_cross_eye=crossPercent*.01f;dirty=true;}
+            ImGui::SameLine();HelpMarker("Pulls the tone band of both eyes toward their mean where both eyes processed the same distant content. Cab pixels are never mixed.");
+            bool align=g_cfg.stereo_crop_align!=0;
+            if(ImGui::Checkbox("Align squares between eyes (restart)",&align)){g_cfg.stereo_crop_align=align?1:0;dirty=true;}
+            ImGui::SameLine();HelpMarker("Moves each eye's square by half the eye offset so both cover the same distant content instead of the same screen position.");
+            if(g_stereo.active&&g_stereo.crop_percent)ImGui::Text("Active squares: left x=%u, right x=%u (work px)",g_stereo.crop_x_eye[0],g_stereo.crop_x_eye[1]);
+        }
         DrawVrLook();
         ImGui::Separator();
     }

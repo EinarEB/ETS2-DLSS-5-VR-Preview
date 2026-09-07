@@ -9,10 +9,11 @@ struct ResidualConstants {
     uint32_t enabled;   // zero is legacy bilinear, solely for off-path validation
     uint32_t stereo;    // equal-width, even SBS; zero is an ordinary mono image
     uint32_t stabilized; // t0 is already a residual when nonzero
-    float crop_min_x=0,crop_min_y=0,crop_max_x=0,crop_max_y=0;
+    float crop_left[4]={};  // left eye square: min x, min y, max x, max y in eye-local uv
+    float crop_right[4]={}; // right eye square; differs from the left one when the squares are aligned on far content
     float crop_feather=0; uint32_t cropped=0; float padding[2]={};
 };
-static_assert(sizeof(ResidualConstants) == 48);
+static_assert(sizeof(ResidualConstants) == 64);
 
 static const char kResidualSrc[] = R"HLSL(
 Texture2D<float4> low_output : register(t0);
@@ -21,7 +22,8 @@ Texture2D<float4> low_input : register(t2);
 SamplerState linear_smp : register(s0);
 cbuffer ResidualConstants : register(b0) {
     float strength; uint enabled; uint stereo; uint stabilized;
-    float4 crop_bounds;
+    float4 crop_left;
+    float4 crop_right;
     float crop_feather; uint cropped; float2 padding;
 };
 struct VSOut { float4 pos : SV_Position; float2 uv : TEXCOORD0; };
@@ -59,6 +61,7 @@ float4 ps_residual(VSOut i) : SV_Target
         if(stereo==0)return native;
         int ew=int(nw/2);int eye=pixel.x>=ew?1:0;
         float2 uv=(float2(pixel-int2(eye*ew,0))+.5)/float2(ew,nh);
+        float4 crop_bounds=eye==0?crop_left:crop_right;
         float2 edge=min(uv-crop_bounds.xy,crop_bounds.zw-uv)*float2(iw/2,ih);
         if(any(edge<=0))return native;
         coverage=smoothstep(0.0,max(crop_feather,1.0),min(edge.x,edge.y));

@@ -13,7 +13,7 @@ depth-match.log and DLSS5-Motion-Captures/<burst>/, ready for tools/sequence_met
 The source run is never modified. Requires only the standard library.
 """
 from pathlib import Path
-import argparse, datetime, hashlib, json, os, shutil, subprocess, sys, time
+import argparse, datetime, hashlib, json, os, shutil, subprocess, sys, threading, time
 
 SKIP_DIRS = {'DLSS5-Motion-Captures', 'DLSS5-Captures', 'screenshots'}
 SKIP_SUFFIXES = ('.log', '.jsonl', '.request', '.ppm', '.raw', '.dmp')
@@ -49,7 +49,9 @@ def main():
     ap.add_argument('--out', required=True, help='root folder for new runs')
     ap.add_argument('--label', default='branch')
     ap.add_argument('--no-depth', action='store_true', help="keep the source run's ets2-stereo-depth.addon64 (control run)")
-    ap.add_argument('--feeder', action='store_true', help='also replace dlss5-feed.addon64 with build/feeder (needs a replay-capable feeder build)')
+    ap.add_argument('--feeder', action='store_true', help='also replace dlss5-feed.addon64 with build/replay (build-replay.cmd); implied by --sequence')
+    ap.add_argument('--sequence', help='E2SEQ02 file to replay instead of the static packet (needs the replay feeder build)')
+    ap.add_argument('--burst-at-delivered', type=int, default=0, help='request the consecutive burst once this many frames were delivered (polls native-input-observer.json); 0 uses --temporal-after callbacks')
     ap.add_argument('--shaders', action='store_true', help="also refresh fx/ from this repo's shaders folder")
     ap.add_argument('--cfg', action='append', default=[], help='key=value line for ets2-stereo-depth.cfg (repeatable)')
     ap.add_argument('--feed-cfg', action='append', default=[], help='key=value override for dlss5-feed.cfg (repeatable)')
@@ -72,10 +74,10 @@ def main():
         if not depth.exists():
             raise SystemExit(f'missing {depth}; run build.cmd first')
         shutil.copy2(depth, run / 'ets2-stereo-depth.addon64'); replaced['ets2-stereo-depth.addon64'] = sha(depth)
-    if a.feeder:
-        feeder = build / 'feeder' / 'dlss5-feed.addon64'
+    if a.feeder or a.sequence:
+        feeder = build / 'replay' / 'dlss5-feed.addon64'
         if not feeder.exists():
-            raise SystemExit(f'missing {feeder}')
+            raise SystemExit(f'missing {feeder}; run build-replay.cmd first')
         shutil.copy2(feeder, run / 'dlss5-feed.addon64'); replaced['dlss5-feed.addon64'] = sha(feeder)
     if a.shaders:
         fx = Path(__file__).resolve().parents[1] / 'shaders'
@@ -100,12 +102,41 @@ def main():
     env.update({'ETS2_ROUTE_CASE': 'Z'})
     env.update(launch.get('explicit_environment', {}))
     env['ETS2_FEED_TEMPORAL_COUNT'] = str(a.temporal_count)
-    env['ETS2_FEED_TEMPORAL_AFTER'] = str(a.temporal_after)
-    (run / 'launch.json').write_text(json.dumps({'arguments': args, 'explicit_environment': {k: env[k] for k in ('ETS2_ROUTE_CASE', 'ETS2_REPLAY_PACKET', 'ETS2_FEED_TEMPORAL_COUNT', 'ETS2_FEED_TEMPORAL_AFTER') if k in env},
-                                                  'source_run': str(source), 'replaced': replaced, 'cfg': a.cfg, 'feed_cfg': a.feed_cfg}, indent=2), encoding='utf-8')
+    if a.sequence:
+        env.pop('ETS2_REPLAY_PACKET', None)
+        env['ETS2_REPLAY_SEQUENCE'] = str(Path(a.sequence).resolve())
+    if a.burst_at_delivered:
+        env.pop('ETS2_FEED_TEMPORAL_AFTER', None)
+    else:
+        env['ETS2_FEED_TEMPORAL_AFTER'] = str(a.temporal_after)
+    keys = ('ETS2_ROUTE_CASE', 'ETS2_REPLAY_PACKET', 'ETS2_REPLAY_SEQUENCE', 'ETS2_FEED_TEMPORAL_COUNT', 'ETS2_FEED_TEMPORAL_AFTER')
+    (run / 'launch.json').write_text(json.dumps({'arguments': args, 'explicit_environment': {k: env[k] for k in keys if k in env},
+                                                  'burst_at_delivered': a.burst_at_delivered, 'source_run': str(source), 'replaced': replaced, 'cfg': a.cfg, 'feed_cfg': a.feed_cfg}, indent=2), encoding='utf-8')
     start = time.monotonic()
-    with (run / 'host.log').open('w') as f:
-        p = subprocess.run(args, cwd=run, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=a.timeout, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    stop = threading.Event()
+
+    def monitor():
+        # The feeder rewrites native-input-observer.json about once a second with the
+        # latest delivered frame id; request the burst once enough frames were delivered.
+        while not stop.wait(0.1):
+            try:
+                obs = json.loads((run / 'native-input-observer.json').read_text(encoding='utf-8'))
+            except (OSError, ValueError):
+                continue
+            slots = [v for v in obs.get('actual_nr_parameters', []) if v]
+            if slots and all(v.get('result') == 1 for v in slots) and min(v.get('frame_id', 0) for v in slots) >= a.burst_at_delivered:
+                (run / 'dlss5-temporal.request').write_text(f'replay-branch-{time.time()}', encoding='utf-8')
+                return
+    thread = threading.Thread(target=monitor, daemon=True) if a.burst_at_delivered else None
+    if thread:
+        thread.start()
+    try:
+        with (run / 'host.log').open('w') as f:
+            p = subprocess.run(args, cwd=run, env=env, stdout=f, stderr=subprocess.STDOUT, timeout=a.timeout, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    finally:
+        stop.set()
+        if thread:
+            thread.join(2)
     host = (run / 'host.log').read_text(errors='replace')
     feed = (run / 'dlss5-feed.log').read_text(errors='replace') if (run / 'dlss5-feed.log').exists() else ''
     bursts = sorted((run / 'DLSS5-Motion-Captures').glob('*/sequence.json')) if (run / 'DLSS5-Motion-Captures').exists() else []

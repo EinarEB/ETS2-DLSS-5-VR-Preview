@@ -57,7 +57,8 @@ static bool EnsureResidualResources()
 
 static bool CompositeOutputToBackbuffer(ID3D11DeviceContext *ctx, ID3D11RenderTargetView *rtv)
 {
-    if(g_cfg.stereo_stability<=0)g_stability.Invalidate();
+    const bool stabilityWanted=g_cfg.stereo_stability>0||g_cfg.stereo_band_split!=0;
+    if(!stabilityWanted)g_stability.Invalidate();
     if (g.hdr || !ResidualSdrFormat(g.color_fmt) || !ResidualSdrFormat(g.output_fmt)) {
         ResidualPreserveOriginal("work_composite requires SDR RGBA8/BGRA8 UNORM color"); return false;
     }
@@ -77,7 +78,7 @@ static bool CompositeOutputToBackbuffer(ID3D11DeviceContext *ctx, ID3D11RenderTa
         (g_cfg.stereo_mode && ((g.width & 1) || (g.backbuffer_width & 1) || g.width < 2))) {
         ResidualPreserveOriginal("invalid native/work geometry for equal-eye residual composition"); return false;
     }
-    if (!std::isfinite(g_frame_work_mix) || (g_frame_work_mix <= 0.0f && g_cfg.stereo_stability <= 0)) {
+    if (!std::isfinite(g_frame_work_mix) || (g_frame_work_mix <= 0.0f && !stabilityWanted)) {
         // All transport/model work has still happened. Do not even touch bindings,
         // alpha, a color conversion, or the already intact native runtime image.
         g_stability.Invalidate();ResidualPreserveOriginal("comparison blend is zero; neural processing stays active"); return true;
@@ -103,13 +104,25 @@ static bool CompositeOutputToBackbuffer(ID3D11DeviceContext *ctx, ID3D11RenderTa
     if (!valid_target) { ResidualPreserveOriginal("destination aliases an input or has an unexpected extent/layer layout"); return false; }
 
     ID3D11ShaderResourceView* processed=g.output_srv;
-    if(g_cfg.stereo_stability>0){
+    if(stabilityWanted){
         if(!g_cfg.stereo_mode||!g_cfg.stereo_depth_required||!g.depth_reversed||!g_stereo.active||!g_stereo.copy_carrier){
             g_stability.Invalidate();ResidualPreserveOriginal("neural stability requires the verified reversed-depth stereo route with preserved game color");return false;
         }
         try{
+            ets2_stability::Settings settings;
+            settings.strengthHigh=g_cfg.stereo_stability;
+            settings.bandSplit=g_cfg.stereo_band_split!=0;
+            settings.strengthLow=g_cfg.stereo_stability_low;
+            settings.crossEye=g_cfg.stereo_eye_shift!=0?g_cfg.stereo_cross_eye:0.0f;
+            // Native-pixel offset of far content between the eyes, expressed in work pixels.
+            settings.shiftPixels=int(std::lround(double(g_cfg.stereo_eye_shift)*double(g.width/2)/double(g.backbuffer_width/2)));
+            settings.cabDepth=.5f;
+            for(unsigned eye=0;eye<2;++eye){
+                if(g_stereo.crop_percent){settings.crop[eye][0]=g_stereo.crop_x_eye[eye];settings.crop[eye][1]=g_stereo.crop_y;settings.crop[eye][2]=g_stereo.crop_x_eye[eye]+g_stereo.width;settings.crop[eye][3]=g_stereo.crop_y+g_stereo.height;}
+                else{settings.crop[eye][0]=settings.crop[eye][1]=0;settings.crop[eye][2]=g.width/2;settings.crop[eye][3]=g.height;}
+            }
             g_profile11.Mark(ctx,ets2_profile::FilterStart);
-            processed=g_stability.Apply(ctx,g.tex11[SLOT_COLOR],g.tex11[SLOT_OUTPUT],g.tex11[SLOT_DEPTH],g.tex11[SLOT_MV],g_stability_epoch,ets2_native::Controls().CommonReset(),g_cfg.stereo_stability);
+            processed=g_stability.Apply(ctx,g.tex11[SLOT_COLOR],g.tex11[SLOT_OUTPUT],g.tex11[SLOT_DEPTH],g.tex11[SLOT_MV],g_stability_epoch,ets2_native::Controls().CommonReset(),settings);
             g_profile11.Mark(ctx,ets2_profile::FilterDone);
             g_stability_applied=true;
         }catch(const std::exception& error){
@@ -133,10 +146,13 @@ static bool CompositeOutputToBackbuffer(ID3D11DeviceContext *ctx, ID3D11RenderTa
     ResidualConstants constants = {g_frame_work_mix, 1, static_cast<uint32_t>(g_cfg.stereo_mode != 0),g_stability_applied?1u:0u};
     if(g_stereo.active&&g_stereo.crop_percent){
         constants.cropped=1;
-        constants.crop_min_x=float(g_stereo.crop_x)/float(g.width/2);
-        constants.crop_min_y=float(g_stereo.crop_y)/float(g.height);
-        constants.crop_max_x=float(g_stereo.crop_x+g_stereo.width)/float(g.width/2);
-        constants.crop_max_y=float(g_stereo.crop_y+g_stereo.height)/float(g.height);
+        for(unsigned eye=0;eye<2;++eye){
+            float* bounds=eye==0?constants.crop_left:constants.crop_right;
+            bounds[0]=float(g_stereo.crop_x_eye[eye])/float(g.width/2);
+            bounds[1]=float(g_stereo.crop_y)/float(g.height);
+            bounds[2]=float(g_stereo.crop_x_eye[eye]+g_stereo.width)/float(g.width/2);
+            bounds[3]=float(g_stereo.crop_y+g_stereo.height)/float(g.height);
+        }
         constants.crop_feather=float(std::min(g_stereo.width,g_stereo.height))*.08f;
     }
     ctx->UpdateSubresource(g.residual_cb, 0, nullptr, &constants, 0, 0);
