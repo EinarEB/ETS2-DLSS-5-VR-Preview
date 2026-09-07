@@ -1,9 +1,10 @@
 {
   "schema": 2,
+  "revision": "114a5d5139f25718",
   "scenes": {
     "exterior": {
-      "title": "Outside the truck",
-      "caption": "Clean \u00b7 no extra grading / Cooler \u00b7 color / Cold \u00b7 color + contrast",
+      "title": "Truck at the depot",
+      "caption": "",
       "width": 2504,
       "height": 2600,
       "original": {
@@ -159,7 +160,7 @@
     },
     "cab": {
       "title": "Inside the cab",
-      "caption": "Clean \u00b7 no extra grading / Cooler \u00b7 color / Cold \u00b7 color + contrast",
+      "caption": "",
       "width": 2504,
       "height": 2600,
       "original": {
@@ -310,6 +311,162 @@
         "ultra-cinematic-cold": {
           "full": "assets/gallery/cab/ultra-cinematic-cold.webp",
           "preview": "assets/gallery/cab/ultra-cinematic-cold-preview.webp"
+        }
+      }
+    },
+    "detail": {
+      "title": "Truck detail",
+      "caption": "",
+      "width": 2504,
+      "height": 2600,
+      "original": {
+        "full": "assets/gallery/detail/original.webp",
+        "preview": "assets/gallery/detail/original-preview.webp"
+      },
+      "samples": {
+        "low-default-clean": {
+          "full": "assets/gallery/detail/low-default-clean.webp",
+          "preview": "assets/gallery/detail/low-default-clean-preview.webp"
+        },
+        "low-default-cooler": {
+          "full": "assets/gallery/detail/low-default-cooler.webp",
+          "preview": "assets/gallery/detail/low-default-cooler-preview.webp"
+        },
+        "low-default-cold": {
+          "full": "assets/gallery/detail/low-default-cold.webp",
+          "preview": "assets/gallery/detail/low-default-cold-preview.webp"
+        },
+        "low-natural-clean": {
+          "full": "assets/gallery/detail/low-natural-clean.webp",
+          "preview": "assets/gallery/detail/low-natural-clean-preview.webp"
+        },
+        "low-natural-cooler": {
+          "full": "assets/gallery/detail/low-natural-cooler.webp",
+          "preview": "assets/gallery/detail/low-natural-cooler-preview.webp"
+        },
+        "low-natural-cold": {
+          "full": "assets/gallery/detail/low-natural-cold.webp",
+          "preview": "assets/gallery/detail/low-natural-cold-preview.webp"
+        },
+        "low-cinematic-clean": {
+          "full": "assets/gallery/detail/low-cinematic-clean.webp",
+          "preview": "assets/gallery/detail/low-cinematic-clean-preview.webp"
+        },
+        "low-cinematic-cooler": {
+          "full": "assets/gallery/detail/low-cinematic-cooler.webp",
+          "preview": "assets/gallery/detail/low-cinematic-cooler-preview.webp"
+        },
+        "low-cinematic-cold": {
+          "full": "assets/gallery/detail/low-cinematic-cold.webp",
+          "preview": "assets/gallery/detail/low-cinematic-cold-preview.webp"
+        },
+        "medium-default-clean": {
+          "full": "assets/gallery/detail/medium-default-clean.webp",
+          "preview": "assets/gallery/detail/medium-default-clean-preview.webp"
+        },
+        "medium-default-cooler": {
+          "full": "assets/gallery/detail/medium-default-cooler.webp",
+          "preview": "assets/gallery/detail/medium-default-cooler-preview.webp"
+        },
+        "medium-default-cold": {
+          "full": "assets/gallery/detail/medium-default-cold.webp",
+          "preview": "assets/gallery/detail/medium-default-cold-preview.webp"
+        },
+        "medium-natural-clean": {
+          "full": "assets/gallery/detail/medium-natural-clean.webp",
+          "preview": "assets/gallery/detail/medium-natural-clean-preview.webp"
+        },
+        "medium-natural-cooler": {
+          "full": "assets/gallery/detail/medium-natural-cooler.webp",
+          "preview": "assets/gallery/detail/medium-natural-cooler-preview.webp"
+        },
+        "medium-natural-cold": {
+          "full": "assets/gallery/detail/medium-natural-cold.webp",
+          "preview": "assets/gallery/detail/medium-natural-cold-preview.webp"
+        },
+        "medium-cinematic-clean": {
+          "full": "assets/gallery/detail/medium-cinematic-clean.webp",
+          "preview": "assets/gallery/detail/medium-cinematic-clean-preview.webp"
+        },
+        "medium-cinematic-cooler": {
+          "full": "assets/gallery/detail/medium-cinematic-cooler.webp",
+          "preview": "assets/gallery/detail/medium-cinematic-cooler-preview.webp"
+        },
+        "medium-cinematic-cold": {
+          "full": "assets/gallery/detail/medium-cinematic-cold.webp",
+          "preview": "assets/gallery/detail/medium-cinematic-cold-preview.webp"
+        },
+        "high-default-clean": {
+          "full": "assets/gallery/detail/high-default-clean.webp",
+          "preview": "assets/gallery/detail/high-default-clean-preview.webp"
+        },
+        "high-default-cooler": {
+          "full": "assets/gallery/detail/high-default-cooler.webp",
+          "preview": "assets/gallery/detail/high-default-cooler-preview.webp"
+        },
+        "high-default-cold": {
+          "full": "assets/gallery/detail/high-default-cold.webp",
+          "preview": "assets/gallery/detail/high-default-cold-preview.webp"
+        },
+        "high-natural-clean": {
+          "full": "assets/gallery/detail/high-natural-clean.webp",
+          "preview": "assets/gallery/detail/high-natural-clean-preview.webp"
+        },
+        "high-natural-cooler": {
+          "full": "assets/gallery/detail/high-natural-cooler.webp",
+          "preview": "assets/gallery/detail/high-natural-cooler-preview.webp"
+        },
+        "high-natural-cold": {
+          "full": "assets/gallery/detail/high-natural-cold.webp",
+          "preview": "assets/gallery/detail/high-natural-cold-preview.webp"
+        },
+        "high-cinematic-clean": {
+          "full": "assets/gallery/detail/high-cinematic-clean.webp",
+          "preview": "assets/gallery/detail/high-cinematic-clean-preview.webp"
+        },
+        "high-cinematic-cooler": {
+          "full": "assets/gallery/detail/high-cinematic-cooler.webp",
+          "preview": "assets/gallery/detail/high-cinematic-cooler-preview.webp"
+        },
+        "high-cinematic-cold": {
+          "full": "assets/gallery/detail/high-cinematic-cold.webp",
+          "preview": "assets/gallery/detail/high-cinematic-cold-preview.webp"
+        },
+        "ultra-default-clean": {
+          "full": "assets/gallery/detail/ultra-default-clean.webp",
+          "preview": "assets/gallery/detail/ultra-default-clean-preview.webp"
+        },
+        "ultra-default-cooler": {
+          "full": "assets/gallery/detail/ultra-default-cooler.webp",
+          "preview": "assets/gallery/detail/ultra-default-cooler-preview.webp"
+        },
+        "ultra-default-cold": {
+          "full": "assets/gallery/detail/ultra-default-cold.webp",
+          "preview": "assets/gallery/detail/ultra-default-cold-preview.webp"
+        },
+        "ultra-natural-clean": {
+          "full": "assets/gallery/detail/ultra-natural-clean.webp",
+          "preview": "assets/gallery/detail/ultra-natural-clean-preview.webp"
+        },
+        "ultra-natural-cooler": {
+          "full": "assets/gallery/detail/ultra-natural-cooler.webp",
+          "preview": "assets/gallery/detail/ultra-natural-cooler-preview.webp"
+        },
+        "ultra-natural-cold": {
+          "full": "assets/gallery/detail/ultra-natural-cold.webp",
+          "preview": "assets/gallery/detail/ultra-natural-cold-preview.webp"
+        },
+        "ultra-cinematic-clean": {
+          "full": "assets/gallery/detail/ultra-cinematic-clean.webp",
+          "preview": "assets/gallery/detail/ultra-cinematic-clean-preview.webp"
+        },
+        "ultra-cinematic-cooler": {
+          "full": "assets/gallery/detail/ultra-cinematic-cooler.webp",
+          "preview": "assets/gallery/detail/ultra-cinematic-cooler-preview.webp"
+        },
+        "ultra-cinematic-cold": {
+          "full": "assets/gallery/detail/ultra-cinematic-cold.webp",
+          "preview": "assets/gallery/detail/ultra-cinematic-cold-preview.webp"
         }
       }
     }

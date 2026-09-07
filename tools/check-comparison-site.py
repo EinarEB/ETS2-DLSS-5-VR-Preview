@@ -23,7 +23,9 @@ for image in provenance['images']:
     p=root/'assets'/image['file']
     assert hashlib.sha256(p.read_bytes()).hexdigest()==image['sha256'],str(p)
 comparisons=json.loads((root/'assets/comparisons.json').read_text(encoding='utf-8'))
-assert set(comparisons['scenes'])=={'cab','exterior'}
+assert set(comparisons['scenes'])=={'cab','exterior','detail'}
+assert len(comparisons['revision'])==16 and all(c in '0123456789abcdef' for c in comparisons['revision'])
+referenced=set()
 for scene in comparisons['scenes'].values():
     assert (scene['width'],scene['height'])==(2504,2600)
     expected={f'{q}-{s}-{l}' for q in ('low','medium','high','ultra') for s in ('natural','default','cinematic') for l in ('clean','cooler','cold')}
@@ -32,8 +34,13 @@ for scene in comparisons['scenes'].values():
     for sample in scene['samples'].values():names.extend(sample.values())
     for name in names:
         assert name.startswith('assets/') and (root/name).is_file(),name
-assert len(provenance['images'])==148 and len(provenance['runs'])==24
-assert len({i['file'] for i in provenance['images']})==148
+        referenced.add(name.removeprefix('assets/'))
+assert len(provenance['images'])==222 and len(provenance['runs'])==36
+assert len({i['file'] for i in provenance['images']})==222
+assert referenced=={i['file'] for i in provenance['images']}
+assert set(provenance['scenes'])==set(comparisons['scenes'])
+assert {(r['scene'],r['quality'],r['style']) for r in provenance['runs']}=={
+    (scene,q,s) for scene in comparisons['scenes'] for q in ('low','medium','high','ultra') for s in ('natural','default','cinematic')}
 assert all(r['verified'] for r in provenance['runs'])
 assert not any(':/Users/' in str(v) for v in provenance.values())
-print('Verified 72 results, two originals, 74 smaller previews, all hashes and local page links.')
+print('Verified 108 results, three originals, 111 smaller previews, all hashes and local page links.')

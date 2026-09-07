@@ -11,7 +11,7 @@ function setSplit(value){
  const divider=viewer.querySelector('.divider');if(divider)divider.hidden=split===0||split===100;
  buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(split===[100,50,0][i])));
 }
-function image(src,alt){return new Promise((resolve,reject)=>{const img=new Image();img.width=2504;img.height=2600;img.alt=alt;img.draggable=false;img.onload=()=>resolve(img);img.onerror=reject;img.src=src;});}
+function image(src,alt){return new Promise((resolve,reject)=>{const img=new Image();img.width=2504;img.height=2600;img.alt=alt;img.draggable=false;img.onload=()=>resolve(img);img.onerror=reject;const url=new URL(src,document.baseURI);url.searchParams.set('v',data.revision||'4');img.src=url.href;});}
 async function render(){
  const version=++request,scene=data.scenes[$('scene').value],key=`${$('quality').value}-${$('style').value}-${$('look').value}`,sample=scene.samples[key];
  const label=selectors.map(s=>s.options[s.selectedIndex].text).join(' · ');
@@ -30,10 +30,10 @@ async function render(){
   range.addEventListener('pointerup',e=>{if(range.hasPointerCapture(e.pointerId))range.releasePointerCapture(e.pointerId);});
   viewer.replaceChildren(result,original,labels,divider,range);viewer.classList.remove('loading');viewer.setAttribute('aria-busy','false');setSplit(split);
   status.textContent=label+' · '+qualities[$('quality').value];buttons.forEach(b=>b.disabled=false);
-  $('original-link').href=scene.original.full;$('result-link').href=sample.full;
+  $('original-link').href=original.src;$('result-link').href=result.src;
  } catch {
   if(version!==request)return;viewer.replaceChildren();viewer.classList.remove('loading');viewer.setAttribute('aria-busy','false');status.textContent='The selected images could not load. Change a setting or refresh to retry.';
  }
 }
 buttons.forEach((b,i)=>b.addEventListener('click',()=>setSplit([100,50,0][i])));selectors.forEach(s=>s.addEventListener('change',render));
-fetch('assets/comparisons.json?v=3').then(r=>{if(!r.ok)throw Error();return r.json();}).then(v=>{data=v;selectors.forEach(s=>s.disabled=false);render();}).catch(()=>{status.textContent='Comparisons could not load. Refresh to retry.';viewer.setAttribute('aria-busy','false');});
+fetch('assets/comparisons.json?v=4').then(r=>{if(!r.ok)throw Error();return r.json();}).then(v=>{data=v;selectors.forEach(s=>s.disabled=false);render();}).catch(()=>{status.textContent='Comparisons could not load. Refresh to retry.';viewer.setAttribute('aria-busy','false');});
