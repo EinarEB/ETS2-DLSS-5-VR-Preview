@@ -152,3 +152,21 @@ The model is close to deterministic on a frozen input, so any flicker measured o
 ### Installed for testing on 2026-09-07 at 21:06
 
 Both branch add-ons from commit abc754d were installed into `E:\ETS2-VR-Preview` with `tools\install_branch_build.py`; every hash recorded in `preview.json` was re-verified afterwards (64 files, no mismatch). `dlss5-feed.cfg` there now has `stereo_eye_shift=-608`; the previous cfg, both replaced add-ons and the previous `preview.json` are in `E:\ETS2-VR-Preview\branch-backups\20260907-210614\`. A desktop shortcut "ETS2 DLSS 5 VR Preview (preview-next)" points at the same launcher; the older "ETS2 DLSS 5 VR Preview" shortcut now starts the same build, because there is one prepared preview. `--restore` puts the release add-ons back; the cfg has to be restored by hand from the backup folder if wanted.
+
+### Headset session of 2026-09-07, 21:28 to 21:35, Medium, milestone 2 build
+
+Einar's report: Medium is now smooth enough for gameplay; High and Ultra are still unusable; on every preset the image flashes and glitches for the first thirty seconds or so, then settles and is better than before. One consecutive burst of 22 frames was recorded from the Add-ons tab (copied with the session logs to `E:\ETS2-DLSS5-Lab\preview-next\bursts\medium-m2-20260907-213442`).
+
+| Measurement | Baseline (release, 2026-09-07 afternoon) | This session |
+| --- | --- | --- |
+| Frame interval, windows without captures or menus | 29.7 ms (33.6 fps) | 27.8 ms (36.0 fps, locked to half of 72 Hz) |
+| Depth proof wait on the render thread | 14.3 ms median | 0.006 ms median; 7443 frames assigned by identity, 4 synchronous, 6 held |
+| Feed GPU time | 8.0 ms | 7.4 ms |
+| Binocular low-band difference, aligned, world only | 3.8 (spaced captures) | 0.43 |
+| Flicker, motion compensated and gated, low / high | no real baseline existed | 0.30 / 0.65 |
+| Source warp error with the recorded Vort vectors | not measured | 5.4 |
+| Effect in the square, total / low / high | 8.0 / 7.8 / 1.0 | 6.1 / 5.9 / 1.1 |
+
+- The first real flicker numbers land where the stressed synthetic sequence did (0.34 / 0.62 with 1.5 px vector noise), and the source warp error says the recorded optical-flow vectors misplace the previous frame by about 5/255 of colour on average. The exact-vector pan sits at 0.15 / 0.29. Vector quality is the remaining flicker source, which is milestone 4.
+- Nothing in the feeder or depth logs marks the first thirty seconds: the feature is held for 60 frames, the first frame arrives 20 s after launch, then the windows read 33.5 and 36.0 fps with no control failures, no resets and no proof fall-backs. The consumer logs one harmless missing `_C` export at start. Whether the flashing is in the neural edit or in the game image itself is undetermined; pressing Scroll Lock (blend 0 %) during those seconds separates the two, and a burst recorded right after entering the cab would show the frames.
+- Two-pass High in the fixture (90 % square, 80 %): four neural slots evaluate with pass two at structure 0.25, no control failures; effect 12.6, flicker 0.27 / 0.52 on the exact-vector pan and 0.53 / 0.32 on the alternating-brightness test, both in proportion to the larger edit; aligned binocular 3.3 because a 90 % square can only shift partially (left x 203, right x 0). No defect in the second pass is visible offline. Its cost is 4 × 1800² of neural input, about 13 MP against Medium's 3 MP, so the headset falls below the half-rate lock; that is milestone 5's problem.
