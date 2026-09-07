@@ -117,6 +117,7 @@ static bool CompositeOutputToBackbuffer(ID3D11DeviceContext *ctx, ID3D11RenderTa
             // Native-pixel offset of far content between the eyes, expressed in work pixels.
             settings.shiftPixels=int(std::lround(double(g_cfg.stereo_eye_shift)*double(g.width/2)/double(g.backbuffer_width/2)));
             settings.cabDepth=.5f;
+            settings.gainLow=g_cfg.stereo_gain_low;settings.gainHigh=g_cfg.stereo_gain_high;settings.gainNear=g_cfg.stereo_gain_near;
             for(unsigned eye=0;eye<2;++eye){
                 if(g_stereo.crop_percent){settings.crop[eye][0]=g_stereo.crop_x_eye[eye];settings.crop[eye][1]=g_stereo.crop_y;settings.crop[eye][2]=g_stereo.crop_x_eye[eye]+g_stereo.width;settings.crop[eye][3]=g_stereo.crop_y+g_stereo.height;}
                 else{settings.crop[eye][0]=settings.crop[eye][1]=0;settings.crop[eye][2]=g.width/2;settings.crop[eye][3]=g.height;}

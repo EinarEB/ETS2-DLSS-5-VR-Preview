@@ -33,27 +33,34 @@ struct Settings {
     bool bandSplit = false;
     float cabDepth = .5f;     // raw depth above this is the cabin band (excluded from cross-eye)
     unsigned crop[2][4] = {}; // per eye x0,y0,x1,y1 of the processed square in eye-local work pixels
+    float gainLow = 1;        // multiplies the low (tone) band of the output; needs bandSplit
+    float gainHigh = 1;       // multiplies the high (detail) band of the output; needs bandSplit
+    float gainNear = 1;       // multiplies the whole output where raw depth is above cabDepth (the cab)
     bool operator==(const Settings&) const = default;
+    // Gains act after both histories, so changing them keeps the history usable.
+    bool HistoryCompatible(const Settings& o) const { Settings a = *this, b = o; a.gainLow = b.gainLow = a.gainHigh = b.gainHigh = a.gainNear = b.gainNear = 1; return a == b; }
 };
 struct Constants {
     uint32_t width, height, eyeWidth, historyValid;
     float strengthHigh, colorTolerance, depthTolerance, depthFloor;
     float boundsExpansion, strengthLow, crossEye, cabDepth;
     int32_t shiftCells; uint32_t lowEyeWidth, lowWidth, lowHeight;
-    uint32_t bandSplit, lowHistoryValid, pad0, pad1;
+    uint32_t bandSplit, lowHistoryValid; float gainLow, gainHigh;
     uint32_t cropLeft[4];
     uint32_t cropRight[4];
+    float gainNear, gainPad0, gainPad1, gainPad2;
 };
-static_assert(sizeof(Constants) == 112);
+static_assert(sizeof(Constants) == 128);
 inline constexpr char Prefix[] = R"HLSL(
 cbuffer C:register(b0) {
     uint width,height,eyeWidth,historyValid;
     float strengthHigh,colorTolerance,depthTolerance,depthFloor;
     float boundsExpansion,strengthLow,crossEye,cabDepth;
     int shiftCells; uint lowEyeWidth,lowWidth,lowHeight;
-    uint bandSplit,lowHistoryValid,pad0,pad1;
+    uint bandSplit,lowHistoryValid; float gainLow,gainHigh;
     uint4 cropLeft;
     uint4 cropRight;
+    float gainNear,gainPad0,gainPad1,gainPad2;
 };
 bool sameDepth(float a,float b) {
     return isfinite(a)&&isfinite(b)&&a>=0&&a<=1&&b>=0&&b<=1&&abs(a-b)<=depthTolerance*max(abs(a),abs(b))+depthFloor;
@@ -193,6 +200,7 @@ void stabilize(uint3 dispatch:SV_DispatchThreadID) {
     // The low band varies over 8 px cells, so the pixel's own value serves its 1 px neighbours too.
     float3 lowR=bandSplit!=0?lowRawAt(p,first,eye):0;
     float3 hraw=raw-lowR, result=hraw;
+    float depth=currentDepth.Load(int3(p,0));
     float2 motion=currentMotion.Load(int3(p,0));
     float2 prev=float2(p)+motion;
     bool inside=all(isfinite(motion))&&prev.x>=first&&prev.x<=first+int(eyeWidth)-1&&prev.y>=0&&prev.y<=int(height)-1;
@@ -201,7 +209,6 @@ void stabilize(uint3 dispatch:SV_DispatchThreadID) {
         int2 a=clampEye(base,first),b=clampEye(base+int2(1,0),first),c=clampEye(base+int2(0,1),first),d=clampEye(base+1,first);
         float3 pc=lerp(lerp(previousInput.Load(int3(a,0)).rgb,previousInput.Load(int3(b,0)).rgb,f.x),
                        lerp(previousInput.Load(int3(c,0)).rgb,previousInput.Load(int3(d,0)).rgb,f.x),f.y);
-        float depth=currentDepth.Load(int3(p,0));
         float3 error=abs(currentInput.Load(int3(p,0)).rgb-pc);
         float agreement=saturate(1-max(error.x,max(error.y,error.z))/colorTolerance);
         // Do not interpolate unrelated foreground/background depth into a
@@ -220,7 +227,9 @@ void stabilize(uint3 dispatch:SV_DispatchThreadID) {
         }
     }
     outHigh[p]=float4(result,0);
-    outResidual[p]=float4(bandSplit!=0?result+lowFinalAt(p,first,eye):result,0);
+    // Gains act on the output only; both histories store the plain bands, so a gain change never compounds.
+    float3 edit=bandSplit!=0?result*gainHigh+lowFinalAt(p,first,eye)*gainLow:result;
+    outResidual[p]=float4(edit*(depth>cabDepth?gainNear:1.0),0);
 }
 )HLSL";
 
@@ -322,14 +331,15 @@ public:
     ID3D11ShaderResourceView* Apply(ID3D11DeviceContext* context,ID3D11Texture2D* input,ID3D11Texture2D* output,ID3D11Texture2D* depth,ID3D11Texture2D* motion,uint64_t epoch,bool reset,const Settings& s){
         const bool anyWork=s.bandSplit||s.strengthHigh>0;
         if(!context||!input||!output||!depth||!motion||!anyWork||!std::isfinite(s.strengthHigh)||s.strengthHigh<0||s.strengthHigh>.9f||
-           !std::isfinite(s.strengthLow)||s.strengthLow<0||s.strengthLow>.95f||!std::isfinite(s.crossEye)||s.crossEye<0||s.crossEye>1||!std::isfinite(s.cabDepth)){
+           !std::isfinite(s.strengthLow)||s.strengthLow<0||s.strengthLow>.95f||!std::isfinite(s.crossEye)||s.crossEye<0||s.crossEye>1||!std::isfinite(s.cabDepth)||
+           !std::isfinite(s.gainLow)||s.gainLow<0||s.gainLow>4||!std::isfinite(s.gainHigh)||s.gainHigh<0||s.gainHigh>4||!std::isfinite(s.gainNear)||s.gainNear<0||s.gainNear>4){
             Invalidate();
             throw std::runtime_error("invalid stability invocation");
         }
         try{
             Prepare(context,input,output,depth,motion);
             const auto now=GetTickCount64();
-            const bool continuous=!reset&&epoch==lastEpoch+1&&now-lastTime<=250&&haveSettings&&s==lastSettings;
+            const bool continuous=!reset&&epoch==lastEpoch+1&&now-lastTime<=250&&haveSettings&&s.HistoryCompatible(lastSettings);
             usedHistory=valid&&continuous;
             const bool lowHistoryOk=lowValid&&continuous&&s.bandSplit;
             const UINT next=1-current;
@@ -339,6 +349,7 @@ public:
             constants.boundsExpansion=2.0f/255.0f;constants.strengthLow=s.strengthLow;constants.crossEye=s.crossEye;constants.cabDepth=s.cabDepth;
             constants.shiftCells=int32_t(std::lround(double(s.shiftPixels)/8.0));constants.lowEyeWidth=lowEyeW;constants.lowWidth=lowW;constants.lowHeight=lowH;
             constants.bandSplit=s.bandSplit?1u:0u;constants.lowHistoryValid=lowHistoryOk?1u:0u;
+            constants.gainLow=s.gainLow;constants.gainHigh=s.gainHigh;constants.gainNear=s.gainNear;
             for(unsigned i=0;i<4;++i){constants.cropLeft[i]=s.crop[0][i];constants.cropRight[i]=s.crop[1][i];}
             {
                 ets2_d3d11::Scope restore(isolatedState,context);

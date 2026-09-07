@@ -25,7 +25,8 @@ cl /nologo /EHsc /O2 /MD /W3 /std:c++20 /DDEPTH_MATCH_MAX_CANDIDATES=4 tests\dep
 "%CSC%" /nologo /langversion:5 /target:exe /platform:x64 /optimize+ /out:build\tests\setup\SetupTests.exe /r:System.Web.Extensions.dll /r:System.IO.Compression.dll /r:System.IO.Compression.FileSystem.dll tests\SetupTests.cs src\launcher\SetupEngine.cs src\launcher\PreviewFiles.cs src\launcher\Requirements.cs || exit /b 1
 "%CSC%" /nologo /langversion:5 /target:exe /platform:x64 /optimize+ /main:ReleaseLauncherTests /out:build\tests\launcher\ReleaseLauncherTests.exe /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll tests\ReleaseLauncherTests.cs src\launcher\PreviewLauncher.cs src\launcher\LauncherOptions.cs src\launcher\PreviewFiles.cs src\launcher\Requirements.cs src\launcher\AssemblyInfo.cs src\launcher\PreviewForm.cs || exit /b 1
 "%CSC%" /nologo /langversion:5 /target:exe /platform:x64 /optimize+ /out:build\tests\setup\RequirementTests.exe /r:System.Web.Extensions.dll tests\RequirementTests.cs src\launcher\Requirements.cs src\launcher\PreviewFiles.cs || exit /b 1
-call test.cmd
+rem Full path: cmd does not search the current folder when NoDefaultCurrentDirectoryInExePath is set.
+call "%~dp0test.cmd"
 exit /b %errorlevel%
 
 :load_visual_studio

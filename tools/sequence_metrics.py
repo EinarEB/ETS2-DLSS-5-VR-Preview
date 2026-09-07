@@ -42,9 +42,11 @@ import numpy as np
 KINDS = ('original', 'depth', 'motion', 'mask', 'result')
 
 
-def load_frames(folder):
+def load_frames(folder, only=None):
     folder = Path(folder)
     manifests = sorted(folder.glob('frame-*.json'), key=lambda p: int(re.search(r'frame-(\d+)', p.name).group(1)))
+    if only is not None:
+        manifests = [m for m in manifests if int(re.search(r'frame-(\d+)', m.name).group(1)) in only]
     if not manifests:
         raise SystemExit(f'no frame-*.json in {folder}')
     frames = []
@@ -179,8 +181,9 @@ def nr_settings(p):
                                                           'DLSSNR.LocalStructureStrength', 'preset')}
 
 
-def analyze(folder, stride=2, cab_depth=0.5, margin=32):
-    folder, session, frames, consecutive = load_frames(folder)
+def analyze(folder, stride=2, cab_depth=0.5, margin=32, frames=None):
+    """frames: optional list of frame indices to score (a pruned burst keeps only frame 3)."""
+    folder, session, frames, consecutive = load_frames(folder, only=frames)
     w, h = frames[0]['_images']['original']['width'], frames[0]['_images']['original']['height']
     ew = w // 2
     rows, previous, previous_color = [], None, None

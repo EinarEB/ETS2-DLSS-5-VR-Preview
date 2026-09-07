@@ -313,7 +313,7 @@ static NVSDK_NGX_Result StereoEvaluate(NVSDK_NGX_D3D12_DLSS_Eval_Params *full, D
         Barrier(g.tex12[slot], D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     }
     NVSDK_NGX_Result result = NVSDK_NGX_Result_Success;
-    ets2_native::BeginControls(g_stereo.eye_count,full->InReset!=0,g_cfg.stereo_controls!=0,g_cfg.stereo_second_tone,g_cfg.stereo_second_structure);
+    ets2_native::BeginControls(g_stereo.eye_count,full->InReset!=0,g_cfg.stereo_controls!=0,g_cfg.stereo_second_tone,g_cfg.stereo_second_structure,g_cfg.stereo_intensity);
     for (unsigned eye = 0; eye < g_stereo.eye_count; ++eye) {
         if(eye>=2){
             auto* previous=g_stereo.eye[eye-2].tex[SLOT_OUTPUT];

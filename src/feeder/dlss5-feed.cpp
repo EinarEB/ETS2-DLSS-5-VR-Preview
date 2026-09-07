@@ -982,6 +982,10 @@ struct Cfg
     float stereo_cross_eye=0.5f; // blend of matched far low-band cells toward the two eyes' mean; needs stereo_eye_shift
     int stereo_eye_shift=0; // far-content offset, right eye minus left eye, native pixels (about -608 on the tested headset); 0 disables cross-eye and square alignment
     int stereo_crop_align=1; // restart-only: place each eye's square so both cover the same far content (needs stereo_eye_shift)
+    float stereo_intensity=0; // lab probe: 0 = the DLSS 5 tab's Intensity; otherwise the value every owned evaluation receives (no measurable effect on the 310.8 model; not in the overlay)
+    float stereo_gain_low=1.0f; // multiplies the tone band of the neural edit after the filter (needs stereo_band_split)
+    float stereo_gain_high=1.0f; // multiplies the detail band of the neural edit after the filter (needs stereo_band_split)
+    float stereo_gain_near=1.0f; // multiplies the whole neural edit on cab pixels (raw depth above 0.5)
 };
 
 static Cfg g_cfg = { 1, 2, -1, -1, -1, 0, 180, 0, 3, 60, 0, 100, 0, 0.3f, 2000, 1, 0, 0, 0, 0, 1.0f, 1.0f, 50, 1, 0, 0, 0, 0, 0, 0.5f, 0, 1, 1 };
@@ -1043,6 +1047,7 @@ static void CfgWriteDefault()
     fprintf(f,"stereo_second_structure=%.3f\n",g_cfg.stereo_second_structure);
     fprintf(f,"stereo_crop=%d\npreview_toggle_key=%d\n",g_cfg.stereo_crop,g_cfg.preview_toggle_key);
     fprintf(f,"stereo_stability_low=%.3f\nstereo_band_split=%d\nstereo_cross_eye=%.3f\nstereo_eye_shift=%d\nstereo_crop_align=%d\n",g_cfg.stereo_stability_low,g_cfg.stereo_band_split,g_cfg.stereo_cross_eye,g_cfg.stereo_eye_shift,g_cfg.stereo_crop_align);
+    fprintf(f,"stereo_intensity=%.3f\nstereo_gain_low=%.3f\nstereo_gain_high=%.3f\nstereo_gain_near=%.3f\n",g_cfg.stereo_intensity,g_cfg.stereo_gain_low,g_cfg.stereo_gain_high,g_cfg.stereo_gain_near);
     fclose(f);
     Log("[feed] wrote default config to %s", path);
 }
@@ -1109,6 +1114,10 @@ static bool CfgReload()
         else if (_stricmp(key, "stereo_cross_eye") == 0 && val>=0 && val<=1) next.stereo_cross_eye=val;
         else if (_stricmp(key, "stereo_eye_shift") == 0 && iv>=-4096 && iv<=4096) next.stereo_eye_shift=iv;
         else if (_stricmp(key, "stereo_crop_align") == 0 && (val==0 || val==1)) next.stereo_crop_align=iv;
+        else if (_stricmp(key, "stereo_intensity") == 0 && val>=0 && val<=16) next.stereo_intensity=val;
+        else if (_stricmp(key, "stereo_gain_low") == 0 && val>=0 && val<=4) next.stereo_gain_low=val;
+        else if (_stricmp(key, "stereo_gain_high") == 0 && val>=0 && val<=4) next.stereo_gain_high=val;
+        else if (_stricmp(key, "stereo_gain_near") == 0 && val>=0 && val<=4) next.stereo_gain_near=val;
     }
     fclose(f);
     if (next.mode < 0 || next.mode > 2) next.mode = g_cfg.mode;
@@ -1156,6 +1165,7 @@ static const char *const kCfgSavedKeys[] = {
     "work_sharpness", "work_composite", "work_mix", "test_compare_hotkey", "gpu_timeout_ms", "buffer_home", "async_home", "sync_home",
     "mv_scale_x", "mv_scale_y", "stall_log_ms", "stereo_carrier_copy", "stereo_passes", "stereo_controls", "stereo_second_tone", "stereo_second_structure", "stereo_float_color", "stereo_stability", "stereo_crop", "preview_toggle_key",
     "stereo_stability_low", "stereo_band_split", "stereo_cross_eye", "stereo_eye_shift", "stereo_crop_align",
+    "stereo_intensity", "stereo_gain_low", "stereo_gain_high", "stereo_gain_near",
 };
 
 static bool CfgKeyIsSaved(const char *key)
@@ -1219,6 +1229,7 @@ static void CfgSave()
     fprintf(f,"stereo_second_structure=%.3f\n",g_cfg.stereo_second_structure);
     fprintf(f,"stereo_crop=%d\npreview_toggle_key=%d\n",g_cfg.stereo_crop,g_cfg.preview_toggle_key);
     fprintf(f,"stereo_stability_low=%.3f\nstereo_band_split=%d\nstereo_cross_eye=%.3f\nstereo_eye_shift=%d\nstereo_crop_align=%d\n",g_cfg.stereo_stability_low,g_cfg.stereo_band_split,g_cfg.stereo_cross_eye,g_cfg.stereo_eye_shift,g_cfg.stereo_crop_align);
+    fprintf(f,"stereo_intensity=%.3f\nstereo_gain_low=%.3f\nstereo_gain_high=%.3f\nstereo_gain_near=%.3f\n",g_cfg.stereo_intensity,g_cfg.stereo_gain_low,g_cfg.stereo_gain_high,g_cfg.stereo_gain_near);
     if (!carried.empty()) fputs(carried.c_str(), f);
     fclose(f);
 }
@@ -6229,7 +6240,7 @@ static void FeedFrame11(reshade::api::effect_runtime *rt, reshade::api::command_
         try{
             std::ostringstream meta;
             meta<<"{\"build\":\"" FEED_VERSION "\",\"source\":\"" ETS2_CAPTURE_SOURCE "\",\"capture_stage\":\"Feeder input and output, before any later ReShade effects\",\"work_width\":"<<g.width<<",\"work_height\":"<<g.height<<",\"work_percent\":"<<work_percent<<",\"saved_work_percent\":"<<g_cfg.work_resolution
-                <<",\"crop_percent\":"<<g_stereo.crop_percent<<",\"crop_x\":"<<g_stereo.crop_x<<",\"crop_y\":"<<g_stereo.crop_y<<",\"crop_x_left\":"<<g_stereo.crop_x_eye[0]<<",\"crop_x_right\":"<<g_stereo.crop_x_eye[1]<<",\"eye_shift_native\":"<<g_cfg.stereo_eye_shift<<",\"band_split\":"<<(g_cfg.stereo_band_split?"true":"false")<<",\"stability_low\":"<<g_cfg.stereo_stability_low<<",\"cross_eye\":"<<g_cfg.stereo_cross_eye<<",\"neural_eye_width\":"<<g_stereo.width<<",\"neural_eye_height\":"<<g_stereo.height<<",\"passes_per_eye\":"<<g_stereo.eye_count/2<<",\"preserve_game_color\":"<<(g_stereo.copy_carrier?"true":"false")
+                <<",\"crop_percent\":"<<g_stereo.crop_percent<<",\"crop_x\":"<<g_stereo.crop_x<<",\"crop_y\":"<<g_stereo.crop_y<<",\"crop_x_left\":"<<g_stereo.crop_x_eye[0]<<",\"crop_x_right\":"<<g_stereo.crop_x_eye[1]<<",\"eye_shift_native\":"<<g_cfg.stereo_eye_shift<<",\"band_split\":"<<(g_cfg.stereo_band_split?"true":"false")<<",\"stability_low\":"<<g_cfg.stereo_stability_low<<",\"cross_eye\":"<<g_cfg.stereo_cross_eye<<",\"intensity_override\":"<<g_cfg.stereo_intensity<<",\"gain_low\":"<<g_cfg.stereo_gain_low<<",\"gain_high\":"<<g_cfg.stereo_gain_high<<",\"gain_near\":"<<g_cfg.stereo_gain_near<<",\"neural_eye_width\":"<<g_stereo.width<<",\"neural_eye_height\":"<<g_stereo.height<<",\"passes_per_eye\":"<<g_stereo.eye_count/2<<",\"preserve_game_color\":"<<(g_stereo.copy_carrier?"true":"false")
                 <<",\"final_blend\":"<<g_frame_work_mix<<",\"depth_reversed\":"<<(g.depth_reversed?"true":"false")<<",\"reset\":"<<((g.need_reset||g_cfg.reset_every)?"true":"false")
                 <<",\"work_color_format\":"<<unsigned(g.color_fmt)<<",\"work_output_format\":"<<unsigned(g.output_fmt)<<",\"sdr_float_color\":"<<(g.stereo_sdr_float?"true":"false")<<",\"hdr\":"<<(g.hdr?"true":"false")<<",\"create_flags\":"<<g.create_flags
                 <<",\"motion_convention\":\"current_to_previous_pixels\",\"motion_scale_x\":"<<g_cfg.mv_scale_x<<",\"motion_scale_y\":"<<g_cfg.mv_scale_y
@@ -7164,7 +7175,7 @@ static void DrawOverlay(reshade::api::effect_runtime *rt)
             if(g_stereo.eye_count!=2u*static_cast<unsigned>(g_cfg.stereo_passes) || g_stereo.copy_carrier!=(g_cfg.stereo_carrier_copy!=0))
                 ImGui::TextWrapped("Your new pass/input choice is saved. Restart the game to apply it.");
         }
-        ImGui::TextWrapped("Style and intensity apply to every pass. Lower Structure if objects change shape; lower Tone if the color or contrast changes too much.");
+        ImGui::TextWrapped("Style applies to every pass. Structure adds detail; Tone changes brightness and color. The DLSS 5 Intensity setting has no effect in this preview: the model produced the same image for 1, 2, 3, 6 and 8 (lab replays, 2026-09-07). Use the gains below to set the strength.");
         bool coordinated=g_cfg.stereo_controls!=0;
         if(ImGui::Checkbox("Keep eye histories together when changing controls",&coordinated)){g_cfg.stereo_controls=coordinated?1:0;dirty=true;}
         if(coordinated){
@@ -7192,7 +7203,18 @@ static void DrawOverlay(reshade::api::effect_runtime *rt)
             bool align=g_cfg.stereo_crop_align!=0;
             if(ImGui::Checkbox("Align squares between eyes (restart)",&align)){g_cfg.stereo_crop_align=align?1:0;dirty=true;}
             ImGui::SameLine();HelpMarker("Moves each eye's square by half the eye offset so both cover the same distant content instead of the same screen position.");
+            float detailPercent=g_cfg.stereo_gain_high*100;
+            if(ImGui::SliderFloat("Detail gain (%)",&detailPercent,0,400,"%.0f%%")){g_cfg.stereo_gain_high=detailPercent*.01f;dirty=true;}
+            ImGui::SameLine();HelpMarker("Scales the fine detail band of the neural edit after the flicker filter. 100% is the plain edit; above it strengthens texture and edge changes without touching the broad tone.");
+            float toneGainPercent=g_cfg.stereo_gain_low*100;
+            if(ImGui::SliderFloat("Tone gain (%)",&toneGainPercent,0,400,"%.0f%%")){g_cfg.stereo_gain_low=toneGainPercent*.01f;dirty=true;}
+            ImGui::SameLine();HelpMarker("Scales the broad tone band (about 24 px and wider) of the neural edit. Below 100% keeps the detail while reducing the darkening or color shift.");
             if(g_stereo.active&&g_stereo.crop_percent)ImGui::Text("Active squares: left x=%u, right x=%u (work px)",g_stereo.crop_x_eye[0],g_stereo.crop_x_eye[1]);
+        }
+        if(split||g_cfg.stereo_stability>0){
+            float nearPercent=g_cfg.stereo_gain_near*100;
+            if(ImGui::SliderFloat("Cab strength (%)",&nearPercent,0,400,"%.0f%%")){g_cfg.stereo_gain_near=nearPercent*.01f;dirty=true;}
+            ImGui::SameLine();HelpMarker("Multiplies the whole neural edit on cab pixels (the game's near depth band) relative to the world outside. 100% treats both alike; 0% leaves the cab untouched.");
         }
         DrawVrLook();
         ImGui::Separator();

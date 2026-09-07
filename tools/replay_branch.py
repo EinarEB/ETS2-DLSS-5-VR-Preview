@@ -26,6 +26,26 @@ def sha(path):
         return hashlib.file_digest(f, 'sha256').hexdigest()
 
 
+def set_ini(path, section, values):
+    """Replace or add KEY=VALUE lines inside one [section] of an ini file, keeping everything else."""
+    lines = path.read_text(encoding='utf-8-sig').splitlines()
+    start = next((i for i, l in enumerate(lines) if l.strip().lower() == f'[{section}]'.lower()), None)
+    if start is None:
+        lines += ['', f'[{section}]'] + [f'{k}={v}' for k, v in values.items()]
+    else:
+        end = next((i for i in range(start + 1, len(lines)) if lines[i].strip().startswith('[')), len(lines))
+        pending = dict(values)
+        for i in range(start + 1, end):
+            key = lines[i].split('=', 1)[0].strip()
+            if key in pending:
+                lines[i] = f'{key}={pending.pop(key)}'
+        insert = end
+        while insert > start + 1 and not lines[insert - 1].strip():
+            insert -= 1
+        lines[insert:insert] = [f'{k}={v}' for k, v in pending.items()]
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
 def copy_run(source, target):
     source = Path(source); target = Path(target)
     target.mkdir(parents=True)
@@ -55,6 +75,7 @@ def main():
     ap.add_argument('--shaders', action='store_true', help="also refresh fx/ from this repo's shaders folder")
     ap.add_argument('--cfg', action='append', default=[], help='key=value line for ets2-stereo-depth.cfg (repeatable)')
     ap.add_argument('--feed-cfg', action='append', default=[], help='key=value override for dlss5-feed.cfg (repeatable)')
+    ap.add_argument('--reshade', action='append', default=[], help="KEY=VALUE for the consumer's [RenoDX.DLSS5] section in the run's ReShade.ini and ReShadeVR.ini (repeatable)")
     ap.add_argument('--frames', type=int, default=None, help='fixture frame count (default: same as the source run)')
     ap.add_argument('--temporal-after', type=int, default=180, help='feeder callbacks before the consecutive burst is requested')
     ap.add_argument('--temporal-count', type=int, default=4, help='frames in the burst (4..48, memory bound)')
@@ -93,6 +114,11 @@ def main():
         for item in a.feed_cfg:
             k, v = item.split('=', 1); lines[k.strip()] = v.strip()
         cfg.write_text(''.join(f'{k}={v}\n' for k, v in lines.items()), encoding='utf-8')
+    if a.reshade:
+        values = dict(item.split('=', 1) for item in a.reshade)
+        for ini in ('ReShade.ini', 'ReShadeVR.ini'):
+            if (run / ini).exists():
+                set_ini(run / ini, 'RenoDX.DLSS5', {k.strip(): v.strip() for k, v in values.items()})
 
     args = list(launch['arguments'])
     args[0] = str(run / Path(args[0]).name)
@@ -111,7 +137,7 @@ def main():
         env['ETS2_FEED_TEMPORAL_AFTER'] = str(a.temporal_after)
     keys = ('ETS2_ROUTE_CASE', 'ETS2_REPLAY_PACKET', 'ETS2_REPLAY_SEQUENCE', 'ETS2_FEED_TEMPORAL_COUNT', 'ETS2_FEED_TEMPORAL_AFTER')
     (run / 'launch.json').write_text(json.dumps({'arguments': args, 'explicit_environment': {k: env[k] for k in keys if k in env},
-                                                  'burst_at_delivered': a.burst_at_delivered, 'source_run': str(source), 'replaced': replaced, 'cfg': a.cfg, 'feed_cfg': a.feed_cfg}, indent=2), encoding='utf-8')
+                                                  'burst_at_delivered': a.burst_at_delivered, 'source_run': str(source), 'replaced': replaced, 'cfg': a.cfg, 'feed_cfg': a.feed_cfg, 'reshade': a.reshade}, indent=2), encoding='utf-8')
     start = time.monotonic()
     stop = threading.Event()
 

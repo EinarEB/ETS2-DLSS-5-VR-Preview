@@ -16,9 +16,10 @@ struct Options {
     bool enabled=true;
     float secondTone=1.0f;
     float secondStructure=1.0f;
-    bool operator==(const Options& b)const{return enabled==b.enabled&&secondTone==b.secondTone&&secondStructure==b.secondStructure;}
+    float intensity=0; // 0 keeps the consumer's DLSSNR.Intensity; otherwise every owned evaluation receives this value
+    bool operator==(const Options& b)const{return enabled==b.enabled&&secondTone==b.secondTone&&secondStructure==b.secondStructure&&intensity==b.intensity;}
 };
-struct Decision {bool valid=false,reset=false;float tone=0,structure=0;};
+struct Decision {bool valid=false,reset=false;float tone=0,structure=0,intensity=0;};
 class Coordinator {
     Controls committed{},current{};
     Options committedOptions{},options{};
@@ -29,11 +30,11 @@ class Coordinator {
 public:
     void Begin(unsigned count,bool requestedReset,Options next){
         ++attempt;active=true;expected=count;seen=0;creation={};options=next;
-        consistent=(count==2||count==4)&&std::isfinite(next.secondTone)&&next.secondTone>=0&&next.secondTone<=1&&std::isfinite(next.secondStructure)&&next.secondStructure>=0&&next.secondStructure<=1;
+        consistent=(count==2||count==4)&&std::isfinite(next.secondTone)&&next.secondTone>=0&&next.secondTone<=1&&std::isfinite(next.secondStructure)&&next.secondStructure>=0&&next.secondStructure<=1&&std::isfinite(next.intensity)&&next.intensity>=0&&next.intensity<=16;
         commonReset=requestedReset||pending||!committedValid||!(next==committedOptions);
     }
     Decision Observe(unsigned slot,const Controls& c,uint64_t identity,bool incomingReset){
-        Decision d;d.tone=c.values[1];d.structure=c.values[2];d.reset=incomingReset;
+        Decision d;d.tone=c.values[1];d.structure=c.values[2];d.intensity=c.values[0];d.reset=incomingReset;
         if(!active||slot>=expected||seen!=((1u<<slot)-1)||!identity||!c.valid()){
             consistent=false;pending=true;return d;
         }
@@ -46,7 +47,7 @@ public:
             consistent=false;pending=true;
         }
         creation[slot]=identity;seen|=1u<<slot;d.valid=true;
-        if(options.enabled){d.reset=incomingReset||commonReset;if(slot>=2){d.tone*=options.secondTone;d.structure*=options.secondStructure;}}
+        if(options.enabled){d.reset=incomingReset||commonReset;if(options.intensity>0)d.intensity=options.intensity;if(slot>=2){d.tone*=options.secondTone;d.structure*=options.secondStructure;}}
         return d;
     }
     bool CanDeliver()const{return !active||!options.enabled||(consistent&&seen==((1u<<expected)-1));}

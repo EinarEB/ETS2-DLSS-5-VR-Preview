@@ -34,7 +34,7 @@ struct State {
 inline State& Get(){static auto* s=new State;return *s;}
 // Only accessed by the serialized owned Feeder rendering path.
 inline ets2_nr_control::Coordinator& Controls(){static auto* c=new ets2_nr_control::Coordinator;return *c;}
-inline void BeginControls(unsigned slots,bool reset,bool enabled,float secondTone,float secondStructure){Controls().Begin(slots,reset,{enabled,secondTone,secondStructure});}
+inline void BeginControls(unsigned slots,bool reset,bool enabled,float secondTone,float secondStructure,float intensity){Controls().Begin(slots,reset,{enabled,secondTone,secondStructure,intensity});}
 inline bool CanDeliverControls(){return Controls().CanDeliver();}
 inline void FinishControls(bool delivered){Controls().Finish(delivered);}
 inline bool UInt(const NVSDK_NGX_Parameter* p,const char* k,unsigned* o){__try{return p&&p->Get(k,o)==NVSDK_NGX_Result_Success;}__except(EXCEPTION_EXECUTE_HANDLER){return false;}}
@@ -72,7 +72,7 @@ inline void Observe11(ID3D11DeviceContext* ctx,const NVSDK_NGX_Handle* h,const N
     s.recentNative.push_back(s.native);if(s.recentNative.size()>32)s.recentNative.pop_front();
     s.reason="Game D3D11 evaluations observed; eye mapping and native-guide validity are not established.";
 }
-inline void ObserveNr(const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,NVSDK_NGX_Result result,bool managed=false,float userTone=0,int userReset=0,float userStructure=0){
+inline void ObserveNr(const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,NVSDK_NGX_Result result,bool managed=false,float userTone=0,int userReset=0,float userStructure=0,float userIntensity=0){
     auto& s=Get();std::lock_guard lock(s.mutex);
     if(eye<0||eye>1||pass<0||pass>1){++s.unownedNr;return;}
     ++s.nrCalls;std::ostringstream j;const auto id=reinterpret_cast<uint64_t>(h);auto found=s.presets.find(id);
@@ -83,20 +83,21 @@ inline void ObserveNr(const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,NVS
     for(auto k:{"DLSSNR.Reset","DLSSNR.Enabled","DLSSNR.UseAutoMask","DLSSNR.UICorrection"})j<<','<<ets2_capture::Quote(k)<<':'<<Sint(p,k);
     j<<",\"observed_qpc\":"<<ets2_temporal::Qpc();
     j<<",\"managed_stereo_controls\":"<<(managed?"true":"false");
-    if(managed)j<<",\"user_local_tone\":"<<userTone<<",\"user_local_structure\":"<<userStructure<<",\"incoming_reset\":"<<userReset<<",\"control_attempt\":"<<Controls().Attempt()<<",\"common_reset\":"<<(Controls().CommonReset()?"true":"false");
+    if(managed)j<<",\"user_local_tone\":"<<userTone<<",\"user_local_structure\":"<<userStructure<<",\"user_intensity\":"<<userIntensity<<",\"incoming_reset\":"<<userReset<<",\"control_attempt\":"<<Controls().Attempt()<<",\"common_reset\":"<<(Controls().CommonReset()?"true":"false");
     j<<"}";s.settings[eye+2*pass]=j.str();
 }
-inline void ObserveNrNoThrow(const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,NVSDK_NGX_Result result,bool managed,float tone,int reset,float structure){try{ObserveNr(h,p,result,managed,tone,reset,structure);}catch(...){}}
+inline void ObserveNrNoThrow(const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,NVSDK_NGX_Result result,bool managed,float tone,int reset,float structure,float intensity){try{ObserveNr(h,p,result,managed,tone,reset,structure,intensity);}catch(...){}}
 // Separate SEH-only function: restoration also runs if the original raises a
 // Windows exception. No borrowed map survives this call or enters a worker.
-inline NVSDK_NGX_Result EvaluateBorrowed(Eval12 original,ID3D12GraphicsCommandList* list,const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,PFN_NVSDK_NGX_ProgressCallback cb,float userTone,int userReset,float userStructure){
+inline NVSDK_NGX_Result EvaluateBorrowed(Eval12 original,ID3D12GraphicsCommandList* list,const NVSDK_NGX_Handle* h,const NVSDK_NGX_Parameter* p,PFN_NVSDK_NGX_ProgressCallback cb,float userTone,int userReset,float userStructure,float userIntensity){
     NVSDK_NGX_Result result=static_cast<NVSDK_NGX_Result>(0x7FFFFFFF);
-    __try{result=original(list,h,p,cb);ObserveNrNoThrow(h,p,result,true,userTone,userReset,userStructure);}
+    __try{result=original(list,h,p,cb);ObserveNrNoThrow(h,p,result,true,userTone,userReset,userStructure,userIntensity);}
     __finally{
         const bool toneOk=SetFloat(p,"DLSSNR.LocalToneStrength",userTone);
         const bool structureOk=SetFloat(p,"DLSSNR.LocalStructureStrength",userStructure);
         const bool resetOk=SetInt(p,"DLSSNR.Reset",userReset);
-        if(!toneOk||!structureOk||!resetOk){Controls().RejectAttempt();Log("[stereo-controls] borrowed parameter restoration failed; current processed frame will not be displayed");}
+        const bool intensityOk=SetFloat(p,"DLSSNR.Intensity",userIntensity);
+        if(!toneOk||!structureOk||!resetOk||!intensityOk){Controls().RejectAttempt();Log("[stereo-controls] borrowed parameter restoration failed; current processed frame will not be displayed");}
     }
     return result;
 }
@@ -119,8 +120,9 @@ inline NVSDK_NGX_Result __cdecl EvalNeural(ID3D12GraphicsCommandList* list,const
                 const bool toneOk=SetFloat(p,"DLSSNR.LocalToneStrength",decision.tone);
                 const bool structureOk=SetFloat(p,"DLSSNR.LocalStructureStrength",decision.structure);
                 const bool resetOk=SetInt(p,"DLSSNR.Reset",decision.reset?1:0);
-                if(!toneOk||!structureOk||!resetOk){SetFloat(p,"DLSSNR.LocalToneStrength",incoming.values[1]);SetFloat(p,"DLSSNR.LocalStructureStrength",incoming.values[2]);SetInt(p,"DLSSNR.Reset",reset);Controls().RejectAttempt();}
-                else return EvaluateBorrowed(original,list,h,p,cb,incoming.values[1],reset,incoming.values[2]);
+                const bool intensityOk=SetFloat(p,"DLSSNR.Intensity",decision.intensity);
+                if(!toneOk||!structureOk||!resetOk||!intensityOk){SetFloat(p,"DLSSNR.LocalToneStrength",incoming.values[1]);SetFloat(p,"DLSSNR.LocalStructureStrength",incoming.values[2]);SetInt(p,"DLSSNR.Reset",reset);SetFloat(p,"DLSSNR.Intensity",incoming.values[0]);Controls().RejectAttempt();}
+                else return EvaluateBorrowed(original,list,h,p,cb,incoming.values[1],reset,incoming.values[2],incoming.values[0]);
             }
         }else Controls().RejectAttempt();
     }else if(owned)Controls().RejectAttempt();

@@ -171,3 +171,59 @@ Einar's report: Medium is now smooth enough for gameplay; High and Ultra are sti
 - Nothing in the feeder or depth logs marks the first thirty seconds: the feature is held for 60 frames, the first frame arrives 20 s after launch, then the windows read 33.5 and 36.0 fps with no control failures, no resets and no proof fall-backs. The consumer logs one harmless missing `_C` export at start. Whether the flashing is in the neural edit or in the game image itself is undetermined; pressing Scroll Lock (blend 0 %) during those seconds separates the two, and a burst recorded right after entering the cab would show the frames.
 - Two-pass High in the fixture (90 % square, 80 %): four neural slots evaluate with pass two at structure 0.25, no control failures; effect 12.6, flicker 0.27 / 0.52 on the exact-vector pan and 0.53 / 0.32 on the alternating-brightness test, both in proportion to the larger edit; aligned binocular 3.3 because a 90 % square can only shift partially (left x 203, right x 0). No defect in the second pass is visible offline. Its cost is 4 × 1800² of neural input, about 13 MP against Medium's 3 MP, so the headset falls below the half-rate lock; that is milestone 5's problem.
 - **The lab reproduces the game.** The recorded burst was packed with `tools/pack_sequence.py` (`E:\ETS2-DLSS5-Lab\preview-next\sequences\real-medium-20260907-213442.sequence`) and replayed through the fixture with the same build and settings. Frame for frame, the replayed residual differs from the game's own by 0.5 to 0.7 out of 255 inside the squares, the effect magnitude matches (6.2 both), the aligned binocular difference matches (0.47 against 0.43), and flicker reads 0.42 / 0.74 against 0.30 / 0.65. The replay starts its neural history cold four frames before the burst while the game had minutes of history, which accounts for the higher flicker. Real driving inputs can now be iterated offline. Harness quirk: arming the recorder before the first delivered frame (`--temporal-after 1`) recorded nothing on a 22-frame sequence; request the burst after the first delivery instead (`--burst-at-delivered 1`).
+
+## 2026-09-07 — Milestone 3: effect strength
+
+Einar moved this milestone ahead of camera truth and the async residual after the headset session: Medium is playable, the effect is still too weak at one pass, and only the second pass made it "wow" at a cost High and Ultra cannot pay. Low and Medium stay at one pass, High and Ultra at two. The question for the lab was which lever buys detail rather than darkening, and whether the second pass can be approximated at one-pass cost.
+
+**Commit:** see `git log` for "Milestone 3". Files: `src/feeder/feed_stability.h` (gains), `feed_residual_composite.h`, `feed_nr_control_policy.h` and `feed_native_observer.h` (intensity write), `feed_stereo.h`, `dlss5-feed.cpp` (configuration keys, overlay), `tools/replay_branch.py`, `tools/sweep_effect.py` (new), `tools/sequence_metrics.py`, `build.cmd`, `docs/BUILD.md`. Installer, launcher, site and third-party binaries untouched.
+
+### What changed
+
+- `tools/replay_branch.py --reshade KEY=VALUE` rewrites the consumer's `[RenoDX.DLSS5]` section in the copied run's `ReShade.ini` and `ReShadeVR.ini`. `tools/sweep_effect.py` runs a matrix of consumer keys and feeder keys over the three recorded static scenes (cab, exterior, detail; Medium · Natural), scores every burst with `sequence_metrics.py` (frame 3 only; `analyze()` now takes a frame list), records the parameter block the model actually received, and compares each result image with the baseline and two-pass results of the same scene. Runs are pruned to about 0.3 GB after scoring and the sweep lives on C: (`...\c-2\work\lab\preview-next\sweeps\consumer-keys-20260907\effect-report.md`, 96 rows), because the first attempt filled E: to zero bytes; my earlier lab runs on E: lost their fixture eye dumps and DLL copies for the same reason (bursts kept).
+- Feeder (`dlss5-feed.cfg`, Add-ons tab, launcher untouched): `stereo_gain_high` ("Detail gain") multiplies the detail band of the neural edit, `stereo_gain_low` ("Tone gain") the tone band (both need `stereo_band_split=1`), `stereo_gain_near` ("Cab strength") the whole edit on pixels whose raw depth is above 0.5 (the cab band found in milestone 0). The gains sit at the end of the stability filter, after both histories, so changing them never compounds through the filter and does not reset the history. Defaults of 1 reproduce the milestone 2 output bit for bit (`Constants` grew from 112 to 128 bytes; validated 0..4).
+- `stereo_intensity` writes `DLSSNR.Intensity` into every owned evaluation through the control policy (restored after the call like tone and structure, both eyes reset together). It is a lab probe and is not in the overlay; see below for why.
+- `build.cmd` calls `test.cmd` by full path: the sandbox this branch is built in sets `NoDefaultCurrentDirectoryInExePath`, and `call test.cmd` then fails even from the repo folder.
+
+### Numbers (headless fixture, static scenes, Medium · Natural, one pass unless stated; effect = mean |result − original| in the processed square, out of 255, split into tone band ≈ 24 px and wider / detail band)
+
+| Setting | Cab total / tone / detail | Exterior | Detail scene |
+| --- | --- | --- | --- |
+| Baseline (intensity 2, structure 0.5, tone 1, style 1, preset 1) | 7.5 / 7.2 / 1.2 | 10.4 / 10.1 / 1.2 | 7.5 / 7.4 / 0.7 |
+| Intensity 1, 3, 6, 8 (model received the value) | identical to baseline within 0.06 | identical | identical |
+| Structure 1.0 | 9.4 / 8.8 / 1.8 | 11.4 / 10.9 / 1.5 | 8.7 / 8.6 / 1.0 |
+| Structure 1.5 | 9.3 / 8.6 / 1.9 | 11.6 / 11.1 / 1.7 | 8.8 / 8.6 / 1.1 |
+| Structure 2.0 | 8.7 / 8.1 / 1.8 | 11.7 / 11.1 / 1.8 | 8.8 / 8.6 / 1.2 |
+| Tone 0.5 | 4.9 / 4.6 / 1.0 | 5.9 / 5.6 / 0.8 | 4.4 / 4.3 / 0.6 |
+| Tone 0 | 2.3 / 2.0 / 0.9 | 1.6 / 1.3 / 0.7 | 1.4 / 1.3 / 0.6 |
+| Structure 1.5 + tone 0.5 | 7.1 / 6.5 / 1.8 | 7.4 / 6.8 / 1.5 | 6.1 / 5.8 / 1.1 |
+| Style 0 (default) | 2.9 / 2.8 / 0.7 | 5.2 / 5.0 / 0.8 | 2.0 / 1.9 / 0.4 |
+| Style 2 (cinematic) | 4.8 / 4.5 / 0.9 | 4.6 / 4.4 / 0.9 | 4.1 / 4.0 / 0.5 |
+| Presets 0, 2, 3; skin 0; NRColorStrength, NRTransferStrength, NRPaperWhiteScale, NRDepthMode | no change (≤ 0.1) | no change | no change |
+| Detail gain 2 | 8.1 / 7.4 / 2.1 | 10.8 / 10.2 / 2.0 | 7.7 / 7.4 / 1.2 |
+| Detail gain 3 | 8.7 / 7.5 / 3.0 | 11.3 / 10.3 / 2.9 | 7.9 / 7.5 / 1.8 |
+| Tone gain 0.5 | 4.0 / 3.6 / 1.1 | 5.4 / 5.1 / 1.1 | 3.8 / 3.7 / 0.6 |
+| Tone gain 2 | 14.8 / 14.4 / 1.7 | 20.4 / 20.1 / 1.5 | 14.9 / 14.8 / 0.8 |
+| Both gains 2 | 15.1 / 14.4 / 2.4 | 20.7 / 20.1 / 2.3 | 15.0 / 14.8 / 1.3 |
+| Cab strength 0 / 2 | 4.6 / 4.5 / 0.7 and 10.5 / 10.0 / 1.8 | unchanged (no cab pixels) | unchanged |
+| Two passes (pass two at tone/structure × 0.5, the High/Ultra setting) | 11.7 / 11.3 / 2.0 | 18.3 / 17.8 / 2.0 | 13.0 / 12.9 / 1.1 |
+| Two passes, pass two at full tone/structure | 12.3 / 11.8 / 2.1 | 18.4 / 17.9 / 2.0 | 13.4 / 13.2 / 1.2 |
+
+- **Intensity is inert in this pipeline.** The consumer caps `NRIntensity` at 2, but that is not the limit: written directly into the model's parameter block, 1, 2, 3, 6 and 8 all produce the same image within 0.06/255 in all three scenes. Whatever DLSS 5 does with Intensity elsewhere, it is not part of the neural pass this preview runs; the feeder's own composite (`work_mix`, fixed at 1) is the only strength that ever acted. That is why the slider felt useless from 0 to 2. The overlay now says so instead of offering a slider.
+- **Structure is the parameter that buys detail**: 0.5 → 1.5 raises the detail band by 40–60 % in every scene, with the tone band rising 15–20 % alongside. Beyond 1.5 the detail band saturates (2.0 adds a few percent) while the cab scene's tone falls back. **Tone is nearly independent of detail**: tone 0 keeps 60–75 % of the detail band while removing 80–85 % of the tone band, so darkening can be traded away without losing the texture edit. Style 1 (the preset default) is the strongest style; 0 and 2 are much weaker in all bands.
+- **The second pass is mostly more tone.** Against one pass it adds 56–76 % tone and 58–66 % detail; in absolute terms +4 to +8 tone against +0.4 to +0.8 detail. The band gains reach the same magnitudes without the second pass: detail gain 3 gives 1.5× the two-pass detail with 2–4 % tone leakage, tone gain 2 exceeds the two-pass tone, and "both gains 2" exceeds two passes in every band at one-pass cost. Whole-frame difference to the two-pass image (cab / exterior / detail): the one-pass baseline sits at 2.3 / 4.3 / 3.0; tone gain 2 reaches 1.9 / 1.6 / 1.2 and both gains 2 reach 1.9 / 1.5 / 1.2. So the gains reproduce the second pass's magnitude and about half of its image; the rest is content the second pass synthesises from the already edited image, which no gain can supply. Detail gain alone does not move toward the two-pass image (2.30 against 2.34 in the cab), consistent with the second pass being mostly tone.
+- Cab strength does what the depth band promised: 0 removes 38 % of the cab scene's edit (the cab pixels inside the square) and touches nothing in the two exterior scenes, which have no cab pixels.
+- Filter cost is unchanged by the gains (three multiplies per pixel in the existing stabilize pass); no new pass and no new texture.
+
+### Not verified offline
+
+- Whether a one-pass image with detail gain 2–3 and structure 1.5 *looks* like the two-pass image is a headset question; the lab measures magnitudes and pixel differences, not appearance or comfort.
+- Gains above 1 amplify whatever flicker survives the filter in that band by the same factor; the flicker sequences were not re-run with gains (the filter's histories are untouched, so the relative flicker is the same and the absolute flicker scales with the gain).
+- Nothing was installed; the launcher's presets still write `NRIntensity` (inert) and structure 0.5.
+
+### Headset test
+
+1. Medium (one pass). In the DLSS 5 tab set Structure to 1.5. In the Add-ons tab under "Filter tone and detail separately": Detail gain 200–300 %, Tone gain 100 %. Compare with Scroll Lock (blend 0 %). Then Tone gain 50–70 % to see whether the darkening was part of the "wow" or in its way.
+2. Same on High (two passes) with gains back at 100 %: this is the reference look. If Medium with gains matches it, High and Ultra can drop to one pass in a later milestone and spend the budget on resolution instead.
+3. Cab strength: 0 % to see the world edit alone, 200 % to see whether the cab wants more or less than the road.
+4. Record one burst with the chosen settings so the flicker with gains can be measured.
