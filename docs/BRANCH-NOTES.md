@@ -148,3 +148,7 @@ The model is close to deterministic on a frozen input, so any flicker measured o
 3. Drive the reference road with the defaults, then flip `stereo_band_split` between 1 and 0 and `stereo_cross_eye` between 50 % and 0 % from the Add-ons tab while driving.
 4. Look for: less eye-to-eye tone mismatch on distant scenery, any seam at the cab edge or square edge, a short fade when entering or leaving shade, and whether the new square position is acceptable. Report the frame interval from the 600-frame windows too; the filter should cost about 0.1 ms more.
 5. Then record the four bursts listed under milestone 0 with these settings, so milestones 3 and 4 have real inputs.
+
+### Installed for testing on 2026-09-07 at 21:06
+
+Both branch add-ons from commit abc754d were installed into `E:\ETS2-VR-Preview` with `tools\install_branch_build.py`; every hash recorded in `preview.json` was re-verified afterwards (64 files, no mismatch). `dlss5-feed.cfg` there now has `stereo_eye_shift=-608`; the previous cfg, both replaced add-ons and the previous `preview.json` are in `E:\ETS2-VR-Preview\branch-backups\20260907-210614\`. A desktop shortcut "ETS2 DLSS 5 VR Preview (preview-next)" points at the same launcher; the older "ETS2 DLSS 5 VR Preview" shortcut now starts the same build, because there is one prepared preview. `--restore` puts the release add-ons back; the cfg has to be restored by hand from the backup folder if wanted.
