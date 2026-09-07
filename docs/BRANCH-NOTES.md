@@ -62,3 +62,43 @@ The model is close to deterministic on a frozen input, so any flicker measured o
 
 - Consecutive driving bursts, recorded with the release build before any renderer change, so that flicker has a baseline. Recording steps are in the first report and repeated here: start the game through the launcher, drive, then from the desktop run `Set-Content E:\ETS2-VR-Preview\dlss5-temporal.request (Get-Date -Format o)` in PowerShell, or press Home in the headset, open Add-ons → DLSS 5 Feed → Record screenshots or motion → Record motion test. The feeder records up to 24 consecutive callbacks (about 0.7 s), limited to half of the free RAM (each frame is about 221 MB at this resolution), then writes the burst to `E:\ETS2-VR-Preview\DLSS5-Motion-Captures\<timestamp>`. Rendering slows during the burst; that is expected and does not measure normal performance.
 - A session started with the user environment variable `ETS2_FEED_PROFILE=1` so `feeder-profile.jsonl` gives the neural list time and the handoff time separately.
+
+## 2026-09-07 — Milestone 1: depth proof off the render thread
+
+**Commit:** see `git log` for "Milestone 1". Files: `src/depth/depth_match.hpp`, `src/depth/ets2_depth_route.hpp`, `src/depth/depth_match_addon.cpp`, `tests/depth_match_gpu_test.cpp`, `test-gpu.cmd`, `tools/replay_branch.py`, `tools/install_branch_build.py`, `build.cmd`, `docs/BUILD.md`. Feeder, shaders, installer, launcher and site untouched.
+
+### What changed
+
+- The exact colour compare still runs on every VR frame. Its 64-byte verdict is copied into a three-slot staging ring and read back with the do-not-wait flag on later frames instead of blocking the render thread. The frame is assembled from the eye assignment an earlier proof established for the same resources. A proof that fails or is ambiguous revokes that assignment, and the next frame runs the original blocking proof; so does any frame whose candidate resources differ from the proven set. The exact-match guarantee therefore holds within one frame of latency.
+- The identity of a candidate is the HDR scene target the depth was snapshotted from, which the route already tracks. The final colour target is an OpenXR swapchain image that rotates every frame and cannot serve as an identity (the first build used it and never left the synchronous path).
+- `ets2-stereo-depth.cfg` next to the add-on, written with defaults when missing and re-read every 120 VR frames, so it can be changed while driving: `async_proof=1` (0 restores the blocking proof on every frame) and `hold_frames=2` (0 restores the old behaviour). With a hold, a route failure publishes the last verified depth for up to that many frames instead of unpublishing it, so the feeder does not reset both neural histories for a one-frame dropout.
+- `depth-match.log` MATCH lines now carry `window_mean_ms`, `window_max_ms` and `window_n` for every Match call since the previous periodic line, plus `sync`, `proof_age` and running totals of synchronous, asynchronous and held frames. `comparison_ms` is still the single-frame value and now measures the non-blocking path.
+- `tests/depth_match_gpu_test.cpp` (run with `test-gpu.cmd`) checks, on tiny synthetic eyes: the blocking proof; identity assignment one frame later; an eye swap inside the same resources being accepted once and corrected the next frame without blocking; a changed byte being accepted once, revoking the assignment and then rejected by the blocking proof; a new resource forcing a blocking proof; legacy mode staying synchronous; a duplicate candidate staying ambiguous; and the bounded hold.
+- `tools/replay_branch.py` replays a recorded lab run through the headless fixture with add-ons from `build\`. `tools/install_branch_build.py` copies built add-ons into a prepared preview, updates the launcher's recorded hashes in `preview.json` and keeps a dated backup; `--restore` reverts.
+
+### Numbers (headless fixture, cab static packet, Medium · Natural, 360 frames, four-frame burst)
+
+| Mode | Match call per frame, window mean | Window max | Frames synchronous / asynchronous |
+| --- | --- | --- | --- |
+| Release add-on, control run | 1.8 to 17.3 ms across the five logged samples | not logged | all synchronous |
+| Branch, `async_proof=0`, two runs | 10.7 to 21.5 ms | 38 to 43 ms | 239 / 0 |
+| Branch, `async_proof=1`, two runs | 0.008 to 0.013 ms | 0.03 to 0.06 ms | 1 / 238 |
+
+- The assembled depth plane is bit-identical to the reference run in every mode.
+- The neural output differs from the reference by 0.06/255 mean (maximum 5) because the burst started at a different frame; the model's own frame-to-frame floor is 0.03 to 0.05. Effect and binocular scores are unchanged (7.4 / 7.1 / 1.2 in the square; 4.8 aligned binocular).
+- The hold never triggered in the fixture because the route never failed there.
+- The release add-on's blocking wait in the fixture varies from 2 to 17 ms from frame to frame with the same load, so its two low samples in the original gallery run were chance, not a smaller cost.
+
+### Not verified offline
+
+- The frame interval in the real game. The fixture has no game load, so the 14 ms wait measured in the headset session cannot be reproduced here; the headset A/B decides how much of it comes back.
+- Whether the scene-target identities stay fixed across ETS2 scene loads, weather changes and Snowymoon's extra scene passes. The totals in the MATCH lines answer this: a healthy session shows `totals_async` far above `totals_sync`.
+- Whether a one-frame-late revocation is ever visible. It would appear as one frame of the other eye's depth guiding the neural pass, followed by a synchronous frame in the log.
+
+### Headset test
+
+1. Close ETS2 and the launcher, then `python tools\install_branch_build.py --preview E:\ETS2-VR-Preview` from the repo. It replaces only `ets2-stereo-depth.addon64`, records the new hash so the launcher accepts it, and backs up the old file and `preview.json` under `E:\ETS2-VR-Preview\branch-backups\`.
+2. Start VR through the launcher as usual. Drive for a few minutes on the reference road. Then edit `E:\ETS2-VR-Preview\ets2-stereo-depth.cfg`, set `async_proof=0`, and drive the same road again; the change takes effect within about 120 frames. Optionally set it back to 1 for a third pass.
+3. Read the 600-frame windows in `dlss5-feed.log` (frame interval) and the MATCH lines in `depth-match.log` (`window_mean_ms`, totals) for each pass. Baseline: 29.7 ms interval in clean windows, 14.3 ms median depth wait.
+4. What to look for: nothing should change visually. Report any single-frame flash of wrong depth of field in the neural edit, and whether the occasional history reset pop after a hitch is gone.
+5. `python tools\install_branch_build.py --preview E:\ETS2-VR-Preview --restore` puts the release add-on back.

@@ -366,7 +366,13 @@ public:
         if(outputs.size()!=2||outputs[0]->source==outputs[1]->source)return false;
         if(!matcher||mw!=w||mh!=h||df!=DXGI_FORMAT_R32_TYPELESS){matcher=std::make_unique<depth_match::Matcher>(device.Get(),c,w,h,DXGI_FORMAT_R32_FLOAT);mw=w;mh=h;df=DXGI_FORMAT_R32_TYPELESS;}
         matcher->Reset();
-        for(auto* l:outputs)if(!matcher->Capture(l->color.Get(),0,l->depth.tex.Get(),0,epoch,++serial))return false;
+        // The final eye color rotates through the swapchain; the HDR scene target the
+        // depth came from keeps its role between frames and names the candidate.
+        for(auto* l:outputs){
+            const bool sourced=l->source>=0&&size_t(l->source)<snapshots.size()&&snapshots[size_t(l->source)].color;
+            const uint64_t identity=sourced?reinterpret_cast<uint64_t>(snapshots[size_t(l->source)].color.Get()):0;
+            if(!matcher->Capture(l->color.Get(),0,l->depth.tex.Get(),0,epoch,++serial,identity))return false;
+        }
         return true;
     }
 };

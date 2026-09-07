@@ -15,6 +15,7 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+#include <cstring>
 #include "feed_d3d11_context.h"
 namespace depth_match
 {
@@ -73,6 +74,7 @@ inline DXGI_FORMAT DepthViewFormat(DXGI_FORMAT f)
 struct Candidate
 {
     uint64_t epoch = 0, serial = 0;
+    uint64_t identity = 0; // native color resource and subresource; stable while the game keeps its targets
 };
 struct Result
 {
@@ -81,6 +83,8 @@ struct Result
     unsigned matches[2] = {0, 0};
     std::vector<uint32_t> mismatch;
     const char* reason = "not matched";
+    bool synchronous = true; // false: assigned by resource identity from an earlier exact proof
+    unsigned proofAge = 0;   // frames between that proof and this frame (0 when synchronous)
 };
 class Matcher
 {
@@ -90,12 +94,39 @@ class Matcher
     ComPtr<ID3D11DeviceContext> c;
     ComPtr<ID3D11Texture2D> colors, depths, sbs, output;
     ComPtr<ID3D11ShaderResourceView> colorsView, sbsView, outputView, depthsView;
-    ComPtr<ID3D11Buffer> scores, readback, constants;
+    ComPtr<ID3D11Buffer> scores, constants;
     ComPtr<ID3D11UnorderedAccessView> scoresView, outputUav;
     ComPtr<ID3D11ComputeShader> compare, assemble;
     ets2_d3d11::PrivateState privateState;
     std::vector<Candidate> candidates;
     bool valid = false, overflow = false;
+    // Every frame still runs the exact compare. Its 64-byte verdict is read back
+    // through a small ring without waiting; the frame itself is assembled from the
+    // assignment an earlier proof established for the same resources. A proof
+    // that fails revokes that assignment and the next frame proves synchronously.
+    static constexpr unsigned kRing = 3;
+    struct Proof
+    {
+        bool pending = false;
+        uint64_t epoch = 0;
+        unsigned count = 0;
+        std::array<uint64_t, Capacity> identity{}, candidateEpoch{};
+    };
+    struct Verified
+    {
+        bool valid = false;
+        uint64_t epoch = 0;
+        unsigned count = 0;
+        int index[2] = {-1, -1};
+        uint64_t identity[2] = {0, 0};
+        std::array<uint64_t, Capacity> identities{};
+        const char* reason = "no proof yet";
+    };
+    ComPtr<ID3D11Buffer> readbacks[kRing];
+    Proof proofs[kRing];
+    unsigned ringNext = 0;
+    Verified verified;
+    uint64_t lastAcceptedEpoch = 0;
     static bool ColorFamily(DXGI_FORMAT f)
     {
         return f == DXGI_FORMAT_R8G8B8A8_TYPELESS || f == DXGI_FORMAT_R8G8B8A8_UNORM ||
@@ -152,7 +183,8 @@ class Matcher
         bd.BindFlags = 0;
         bd.MiscFlags = 0;
         bd.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-        Check(d->CreateBuffer(&bd, nullptr, &readback), "scores readback");
+        for (auto& readback : readbacks)
+            Check(d->CreateBuffer(&bd, nullptr, &readback), "scores readback");
         bd = {};
         bd.ByteWidth = 16;
         bd.Usage = D3D11_USAGE_DEFAULT;
@@ -239,8 +271,12 @@ Texture2DArray<float> rawDepth:register(t0);RWTexture2D<float> outputDepth:regis
     {
         return static_cast<unsigned>(candidates.size());
     }
+    // `identity` names the resource whose role is expected to stay fixed across
+    // frames (the scene target the depth was snapshotted from). The final color
+    // target itself rotates through the OpenXR swapchain, so it is the fallback
+    // only when the caller has nothing better.
     bool Capture(ID3D11Texture2D* color, unsigned colorSubresource, ID3D11Texture2D* depth,
-                 unsigned depthSubresource, uint64_t epoch, uint64_t serial)
+                 unsigned depthSubresource, uint64_t epoch, uint64_t serial, uint64_t identity = 0)
     {
         if (candidates.size() >= Capacity)
         {
@@ -263,10 +299,80 @@ Texture2DArray<float> rawDepth:register(t0);RWTexture2D<float> outputDepth:regis
         // Full-subresource copies also preserve depth that will immediately be cleared/reused.
         c->CopySubresourceRegion(colors.Get(), layer, 0, 0, 0, color, colorSubresource, nullptr);
         c->CopySubresourceRegion(depths.Get(), layer, 0, 0, 0, depth, depthSubresource, nullptr);
-        candidates.push_back({epoch, serial});
+        candidates.push_back({epoch, serial, identity ? identity : reinterpret_cast<uint64_t>(color) ^ (uint64_t(colorSubresource) << 56)});
         return true;
     }
-    Result Match(ID3D11Texture2D* combined, uint64_t epoch)
+    // Reads one recorded proof back and turns it into the verified eye
+    // assignment, or its failure reason. A non-blocking read returns false while
+    // the GPU still owns that slot; a blocking read throws on failure as before.
+    bool Retire(unsigned slot, bool nonBlocking)
+    {
+        Proof& proof = proofs[slot];
+        if (!proof.pending)
+            return true;
+        D3D11_MAPPED_SUBRESOURCE map{};
+        const HRESULT hr = c->Map(readbacks[slot].Get(), 0, D3D11_MAP_READ, nonBlocking ? D3D11_MAP_FLAG_DO_NOT_WAIT : 0, &map);
+        if (nonBlocking && hr == DXGI_ERROR_WAS_STILL_DRAWING)
+            return false;
+        Check(hr, "match readback map");
+        std::array<uint32_t, 2 * Capacity> flags{};
+        memcpy(flags.data(), map.pData, sizeof(uint32_t) * 2 * proof.count);
+        c->Unmap(readbacks[slot].Get(), 0);
+        proof.pending = false;
+        Verified next;
+        next.epoch = proof.epoch;
+        next.count = proof.count;
+        next.identities = proof.identity;
+        unsigned matches[2] = {0, 0};
+        for (unsigned i = 0; i < proof.count; ++i)
+        {
+            if (proof.candidateEpoch[i] != proof.epoch)
+                continue;
+            for (unsigned eye = 0; eye < 2; ++eye)
+                if (flags[i * 2 + eye] == 0)
+                {
+                    ++matches[eye];
+                    next.index[eye] = static_cast<int>(i);
+                }
+        }
+        if (matches[0] != 1 || matches[1] != 1 || next.index[0] == next.index[1])
+        {
+            next.valid = false;
+            next.reason = (matches[0] > 1 || matches[1] > 1 || (next.index[0] >= 0 && next.index[0] == next.index[1]))
+                              ? "ambiguous correspondence"
+                              : "missing or stale correspondence";
+        }
+        else
+        {
+            next.valid = true;
+            next.identity[0] = proof.identity[static_cast<size_t>(next.index[0])];
+            next.identity[1] = proof.identity[static_cast<size_t>(next.index[1])];
+            next.reason = "unique current-epoch exact color correspondence";
+        }
+        verified = next; // proofs retire in recording order, so the newest verdict stands
+        return true;
+    }
+    // The verified assignment applies to the current candidates only when they
+    // are the same resources, in any order, and each eye identity occurs once.
+    bool AssignFromVerified(uint64_t epoch, int (&eye)[2]) const
+    {
+        if (!verified.valid || verified.count != Count() || verified.identity[0] == verified.identity[1])
+            return false;
+        std::array<uint64_t, Capacity> now{}, then = verified.identities;
+        for (unsigned i = 0; i < Count(); ++i)
+            now[i] = candidates[i].identity;
+        std::sort(now.begin(), now.begin() + Count());
+        std::sort(then.begin(), then.begin() + Count());
+        if (!std::equal(now.begin(), now.begin() + Count(), then.begin()))
+            return false;
+        eye[0] = eye[1] = -1;
+        for (unsigned e = 0; e < 2; ++e)
+            for (unsigned i = 0; i < Count(); ++i)
+                if (candidates[i].identity == verified.identity[e] && candidates[i].epoch == epoch)
+                    eye[e] = eye[e] < 0 ? static_cast<int>(i) : -2;
+        return eye[0] >= 0 && eye[1] >= 0 && eye[0] != eye[1];
+    }
+    Result Match(ID3D11Texture2D* combined, uint64_t epoch, bool asyncProof = false)
     {
         valid = false;
         Result out;
@@ -293,6 +399,9 @@ Texture2DArray<float> rawDepth:register(t0);RWTexture2D<float> outputDepth:regis
         // readback. A suppressing game predicate cannot publish stale scores.
         ets2_d3d11::Scope isolated(privateState,c.Get());
         if(!isolated){out.reason="protected private context unavailable";return out;}
+        // Three proofs may be in flight. Reusing a slot whose proof has not been
+        // read yet waits for it, which bounds the verification lag to two frames.
+        Retire(ringNext, false);
         c->CopyResource(sbs.Get(), combined);
         {
             const UINT zero[4]{};
@@ -313,33 +422,54 @@ Texture2DArray<float> rawDepth:register(t0);RWTexture2D<float> outputDepth:regis
 #endif
             ID3D11UnorderedAccessView* none = nullptr;
             c->CSSetUnorderedAccessViews(0, 1, &none, nullptr);
-            c->CopyResource(readback.Get(), scores.Get());
+            c->CopyResource(readbacks[ringNext].Get(), scores.Get());
         }
-        // Explicit synchronous proof prototype: only 64 bytes cross to the CPU.
-        D3D11_MAPPED_SUBRESOURCE map{};
-        Check(c->Map(readback.Get(), 0, D3D11_MAP_READ, 0, &map), "match readback map");
-        out.mismatch.assign(static_cast<const uint32_t*>(map.pData),
-                            static_cast<const uint32_t*>(map.pData) + Count() * 2);
-        c->Unmap(readback.Get(), 0);
+        Proof& proof = proofs[ringNext];
+        proof.pending = true;
+        proof.epoch = epoch;
+        proof.count = Count();
         for (unsigned i = 0; i < Count(); ++i)
         {
-            if (candidates[i].epoch != epoch)
-                continue;
-            for (unsigned eye = 0; eye < 2; ++eye)
-                if (out.mismatch[i * 2 + eye] == 0)
-                {
-                    ++out.matches[eye];
-                    out.eye[eye] = static_cast<int>(i);
-                }
+            proof.identity[i] = candidates[i].identity;
+            proof.candidateEpoch[i] = candidates[i].epoch;
         }
-        if (out.matches[0] != 1 || out.matches[1] != 1 || out.eye[0] == out.eye[1])
+        const unsigned recorded = ringNext;
+        ringNext = (ringNext + 1) % kRing;
+        // Read back whatever earlier proofs have finished, oldest first, without waiting.
+        for (unsigned k = 1; k < kRing; ++k)
         {
-            out.reason =
-                (out.matches[0] > 1 || out.matches[1] > 1 || (out.eye[0] >= 0 && out.eye[0] == out.eye[1]))
-                    ? "ambiguous correspondence"
-                    : "missing or stale correspondence";
-            return out;
+            const unsigned slot = (recorded + k) % kRing;
+            if (proofs[slot].pending && !Retire(slot, true))
+                break;
         }
+        if (asyncProof && AssignFromVerified(epoch, out.eye))
+        {
+            // Same resources as an exactly proven frame: assign by identity now and
+            // let this frame's own proof confirm or revoke it one frame later.
+            out.synchronous = false;
+            out.proofAge = static_cast<unsigned>(epoch - verified.epoch);
+            out.reason = "identity assignment from an earlier exact proof";
+        }
+        else
+        {
+            // No proven assignment covers these resources: the original blocking proof.
+            Retire(recorded, false);
+            if (verified.epoch != epoch)
+            {
+                out.reason = "proof did not complete";
+                return out;
+            }
+            if (!verified.valid)
+            {
+                out.reason = verified.reason;
+                return out;
+            }
+            out.eye[0] = verified.index[0];
+            out.eye[1] = verified.index[1];
+            out.synchronous = true;
+            out.reason = verified.reason;
+        }
+        out.matches[0] = out.matches[1] = 1;
         // Typed depth-only SRVs normalize D16/D24 and discard stencil; D32 remains raw float.
         {
             ID3D11ShaderResourceView* noViews[2]{};c->CSSetShaderResources(0,2,noViews);
@@ -355,7 +485,7 @@ Texture2DArray<float> rawDepth:register(t0);RWTexture2D<float> outputDepth:regis
             c->Dispatch((2 * w + 15) / 16, (h + 15) / 16, 1);
         }
         valid = out.accepted = true;
-        out.reason = "unique current-epoch exact color correspondence";
+        lastAcceptedEpoch = epoch;
         return out;
     }
     ID3D11ShaderResourceView* View() const
@@ -365,6 +495,20 @@ Texture2DArray<float> rawDepth:register(t0);RWTexture2D<float> outputDepth:regis
     ID3D11Texture2D* Output() const
     {
         return valid ? output.Get() : nullptr;
+    }
+    // The last assembled depth stays readable for a bounded number of frames
+    // after the route fails, so a one-frame dropout need not reset histories.
+    ID3D11ShaderResourceView* HeldView(uint64_t epoch, unsigned frames) const
+    {
+        return lastAcceptedEpoch != 0 && epoch > lastAcceptedEpoch && epoch - lastAcceptedEpoch <= frames ? outputView.Get() : nullptr;
+    }
+    uint64_t LastAcceptedEpoch() const
+    {
+        return lastAcceptedEpoch;
+    }
+    bool ProofVerified() const
+    {
+        return verified.valid;
     }
     void SaveColorPreviews(uint64_t epoch, const std::wstring& outputDirectory = L"")
     {

@@ -9,6 +9,7 @@
 #include <set>
 #include <cstdio>
 #include <cstdarg>
+#include <cstring>
 using Microsoft::WRL::ComPtr;
 using namespace reshade::api;
 namespace
@@ -40,6 +41,55 @@ void Log(const char* f, ...)
     logBytes += fwrite(line, 1, bytes, logfile);
     logBytes += fwrite("\n", 1, 1, logfile); fflush(logfile);
 }
+// ets2-stereo-depth.cfg next to the add-on. Written with defaults when missing;
+// re-read every 120 VR frames so a change takes effect without a restart.
+struct Config
+{
+    bool asyncProof = true;  // verify the eye assignment one frame late instead of blocking on the GPU
+    unsigned holdFrames = 2; // keep the last verified depth published this long when the route fails
+};
+Config config;
+void LoadConfig()
+{
+    const auto path = outputDirectory + L"ets2-stereo-depth.cfg";
+    FILE* f = nullptr;
+    if (_wfopen_s(&f, path.c_str(), L"rb") != 0 || !f)
+    {
+        if (_wfopen_s(&f, path.c_str(), L"wb") == 0 && f)
+        {
+            fputs("# ETS2 stereo depth add-on. Re-read every two seconds or so while the game runs.\n"
+                  "# async_proof=1: the exact color proof still runs every frame, but its result is read one frame\n"
+                  "#   later and the frame is assembled from the assignment proven for the same resources, so the\n"
+                  "#   render thread never waits for the GPU here. 0 restores the blocking proof on every frame.\n"
+                  "async_proof=1\n"
+                  "# hold_frames=N: when the scene depth route fails, keep the last verified depth published for up\n"
+                  "#   to N frames instead of resetting both neural histories. 0 restores the old behaviour.\n"
+                  "hold_frames=2\n",
+                  f);
+            fclose(f);
+        }
+        return;
+    }
+    char line[160];
+    Config next;
+    while (fgets(line, sizeof(line), f))
+    {
+        char key[64];
+        int value = 0;
+        if (sscanf_s(line, " %63[A-Za-z_] = %d", key, static_cast<unsigned>(sizeof(key)), &value) != 2)
+            continue;
+        if (_stricmp(key, "async_proof") == 0)
+            next.asyncProof = value != 0;
+        else if (_stricmp(key, "hold_frames") == 0 && value >= 0 && value <= 8)
+            next.holdFrames = static_cast<unsigned>(value);
+    }
+    fclose(f);
+    if (next.asyncProof != config.asyncProof || next.holdFrames != config.holdFrames)
+    {
+        config = next;
+        Log("CONFIG async_proof=%d hold_frames=%u", int(config.asyncProof), config.holdFrames);
+    }
+}
 struct Binding
 {
     ComPtr<ID3D11Texture2D> color, depth;
@@ -60,6 +110,9 @@ struct DeviceState
     std::string lastReason;
     uint64_t epoch = 0, serial = 0, vrFrames = 0;
     unsigned routeDiagnostics = 0;
+    uint64_t heldFrames = 0, asyncFrames = 0, syncFrames = 0;
+    double matchMsSum = 0, matchMsMax = 0;
+    unsigned matchMsCount = 0;
     bool inEffects = false, mixedScope = false, previewSaved = false;
     std::unordered_map<command_list*, Command> commands;
     std::set<effect_runtime*> runtimes;
@@ -275,6 +328,21 @@ void Publish(effect_runtime* r, ID3D11ShaderResourceView* view, bool valid)
     if (motion.handle)
         r->set_uniform_value_bool(motion, &valid, 1);
 }
+// Publishes the last verified depth for a bounded number of frames after the
+// route or the proof fails, so the feeder keeps its histories through a dropout.
+bool HoldDepth(effect_runtime* r, DeviceState& s, const char* why)
+{
+    if (!config.holdFrames || !s.matcher)
+        return false;
+    auto* view = s.matcher->HeldView(s.epoch, config.holdFrames);
+    if (!view)
+        return false;
+    Publish(r, view, true);
+    ++s.heldFrames;
+    if (s.heldFrames <= 4 || s.heldFrames % 120 == 0)
+        Log("MATCH epoch=%llu held=1 age=%llu totals_held=%llu reason=%s", s.epoch, s.epoch - s.matcher->LastAcceptedEpoch(), s.heldFrames, why);
+    return true;
+}
 void SaveDepth(ID3D11Device* d, ID3D11DeviceContext* c, ID3D11Texture2D* texture, uint64_t epoch)
 {
     D3D11_TEXTURE2D_DESC desc{};
@@ -315,6 +383,8 @@ try
     s.runtimes.insert(r);
     Publish(r, nullptr, false);
     ++s.vrFrames;
+    if (s.vrFrames % 120 == 0)
+        LoadConfig();
     uint32_t runtimeWidth = 0, runtimeHeight = 0;
     r->get_screenshot_width_and_height(&runtimeWidth, &runtimeHeight);
     if (runtimeWidth % 2 || runtimeWidth < 256 || runtimeHeight < 128 || s.runtimes.size() != 1)
@@ -342,6 +412,7 @@ try
     s.inEffects = true;
     if(!routeCollected&&!allowGenericFixture){
         const char* reason="current-frame ETS2 scene-depth route unavailable; generic AA depth forbidden";
+        if(HoldDepth(r,s,reason)){s.lastReason=reason;return;}
         if(s.vrFrames<5||s.vrFrames%120==0||s.lastReason!=reason)Log("MATCH epoch=%llu rejected=%s",s.epoch,reason);
         s.lastReason=reason;return; // Publish(false) above remains authoritative
     }
@@ -353,6 +424,11 @@ try
     if (!s.matcher || s.mixedScope)
     {
         const char* reason = s.mixedScope ? "mixed candidate extents or depth formats" : "no candidates";
+        if (HoldDepth(r, s, reason))
+        {
+            s.lastReason = reason;
+            return;
+        }
         if (s.vrFrames < 5 || s.vrFrames % 120 == 0 || s.lastReason != reason)
             Log("MATCH epoch=%llu rejected=%s", s.epoch, reason);
         s.lastReason = reason;
@@ -365,14 +441,30 @@ try
     LARGE_INTEGER a{}, b{}, freq{};
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&a);
-    auto result = s.matcher->Match(target.Get(), s.epoch);
+    auto result = s.matcher->Match(target.Get(), s.epoch, config.asyncProof);
     QueryPerformanceCounter(&b);
+    if (result.accepted)
+    {
+        if (result.synchronous)
+            ++s.syncFrames;
+        else
+            ++s.asyncFrames;
+    }
+    const double matchMs = 1000.0 * double(b.QuadPart - a.QuadPart) / double(freq.QuadPart);
+    s.matchMsSum += matchMs;
+    s.matchMsMax = matchMs > s.matchMsMax ? matchMs : s.matchMsMax;
+    ++s.matchMsCount;
     if (s.vrFrames < 5 || s.vrFrames % 120 == 0 || s.lastReason != result.reason)
     {
+        // window_* summarise every Match call since the previous periodic line.
         Log("MATCH epoch=%llu VR=%p extent=%ux%u accepted=%d choices=%d,%d counts=%u,%u comparison_ms=%.4f "
-            "reason=%s",
+            "window_mean_ms=%.4f window_max_ms=%.4f window_n=%u "
+            "sync=%d proof_age=%u totals_sync=%llu totals_async=%llu totals_held=%llu reason=%s",
             s.epoch, r, s.w * 2, s.h, result.accepted, result.eye[0], result.eye[1], result.matches[0],
-            result.matches[1], 1000.0 * (b.QuadPart - a.QuadPart) / freq.QuadPart, result.reason);
+            result.matches[1], matchMs, s.matchMsSum / double(s.matchMsCount), s.matchMsMax, s.matchMsCount,
+            int(result.synchronous), result.proofAge, s.syncFrames, s.asyncFrames, s.heldFrames, result.reason);
+        s.matchMsSum = s.matchMsMax = 0;
+        s.matchMsCount = 0;
     }
     if (!s.previewSaved && previewSets < 1 && s.matcher->Count() && s.vrFrames > 1)
     {
@@ -393,6 +485,8 @@ try
                       reinterpret_cast<ID3D11DeviceContext*>(cl->get_native()), s.matcher->Output(), s.epoch);
         }
     }
+    else
+        HoldDepth(r, s, result.reason);
 }
 catch (const std::exception& e)
 {
@@ -507,6 +601,8 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)
         Log("ETS2 HDR stereo depth route v3-dev: save reused scene depth, replay pinned fullscreen shader UVs, "
             "then require unique current-epoch final eye colors. Reversed-Z eye input; no draw-order eye inference.");
         Log("Scene provenance required=%d; generic depth fallback is %s",!allowGenericFixture,allowGenericFixture?"enabled in diagnostic fixture build":"forbidden");
+        LoadConfig();
+        Log("CONFIG async_proof=%d hold_frames=%u (ets2-stereo-depth.cfg)", int(config.asyncProof), config.holdFrames);
         reshade::register_event<reshade::addon_event::bind_render_targets_and_depth_stencil>(Bind);
         reshade::register_event<reshade::addon_event::init_pipeline>(InitPipeline);
         reshade::register_event<reshade::addon_event::destroy_pipeline>(DestroyPipeline);

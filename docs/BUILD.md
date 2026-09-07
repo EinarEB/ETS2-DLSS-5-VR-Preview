@@ -17,6 +17,8 @@ The installer and generated source ZIP omit the large comparison photos. To work
 - `preview_blend_test.cpp` exercises focus/release/press behavior, runtime generations, manual overrides and delivery acknowledgement without ReShade.
 - `SetupTests.cs` uses deliberately non-executable PE headers and tiny archives. It tests input validation, path containment, read locks, rollback/cancellation and settings preservation. An optional second argument can supply the official ReShade EXE for data-only archive extraction.
 - `ReleaseLauncherTests.cs` drives controls and private methods against local fixtures. It never calls the production launcher entry point, game launch, shell/shortcut or physical runtime verification paths.
+- `depth_match_gpu_test.cpp` builds with `build.cmd` but runs only through `test-gpu.cmd`, because it needs a D3D11 hardware device. It checks the stereo depth matcher's exact proof, the one-frame-late identity assignment, its correction when the eyes swap, its fall-back when a resource changes or a proof fails, and the bounded depth hold, on tiny synthetic eyes.
+- `tools/replay_branch.py` replays a recorded lab run through the headless OpenXR fixture with add-ons from `build\`, and `tools/sequence_metrics.py` scores the recorded bursts. Both need the lab folders described in `BRANCH-NOTES.md`; the second needs numpy.
 
 The setup fixture retains its tiny files and a report under `%TEMP%\ets2-preview-tests` for inspection. The launcher fixture lives under `build\tests\launcher`. Tests must not be run from an installed game preview directory. See `VALIDATION.md` for what still requires a headset and the real Windows presentation chain.
 
